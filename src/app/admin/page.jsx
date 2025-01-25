@@ -311,9 +311,13 @@ export default function AdminDashboard() {
               ))}
             </div>
           </nav>
-          <div className="border-t dark:border-red-800 p-4">
-            <Button variant="outline" className="w-full" onClick={handleLogout}>
-              <LogOut className="mr-2 h-5 w-5" />
+          <div className="border-t dark:border-gray-700 p-4">
+            <Button
+              variant="destructive"
+              className="w-full bg-red-600 hover:bg-red-700 text-white dark:bg-red-700 dark:hover:bg-red-800 dark:text-white flex items-center justify-center gap-2 transition-colors duration-200"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-5 w-5" />
               Logout
             </Button>
           </div>

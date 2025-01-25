@@ -236,7 +236,10 @@ export default function ActivityLogs() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Activity Logs</CardTitle>
-        <Button onClick={generateReport} className="flex items-center gap-2">
+        <Button
+          onClick={generateReport}
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white dark:bg-green-700 dark:hover:bg-green-800"
+        >
           <Download className="h-4 w-4" />
           Export Report
         </Button>

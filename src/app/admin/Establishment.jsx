@@ -350,7 +350,7 @@ export default function Establishments() {
 
             <Button
               onClick={handleArchive}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white dark:bg-green-700 dark:hover:bg-green-800"
               disabled={establishments.length === 0}
             >
               <Archive className="h-4 w-4" />
