@@ -15,6 +15,9 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { getImagePreview } from "@/services/appwrite";
 import { storage } from "@/services/appwrite";
+import { databases } from "@/services/appwrite";
+import { ID } from "appwrite";
+import { appwriteConfig } from "@/services/appwrite";
 
 export default function BasicInfo() {
   const { register, setValue, watch } = useFormContext();
@@ -61,16 +64,30 @@ export default function BasicInfo() {
   const handleSelectChange = (value, name) => {
     setValue(name, value, { shouldValidate: true }); // Trigger validation if required
   };
-  const uploadFileToStorage = async (file) => {
+  const uploadFileToStorage = async (file, isLguLicense = true) => {
     try {
+      // Upload file to storage
       const response = await storage.createFile(
-        "6789e834002216f21c5c", // Correct bucket ID
-        "unique()", // Unique identifier for each file
+        appwriteConfig.storageBucketId, // Using the config value
+        ID.unique(),
         file
       );
-      return response; // Return the uploaded file details
+
+      // Create or update document in accommodations collection
+      const documentData = isLguLicense
+        ? { lgulicense: response.$id }
+        : { dotlicense: response.$id };
+
+      await databases.createDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.accommodationsCollectionId,
+        ID.unique(),
+        documentData
+      );
+
+      return response;
     } catch (error) {
-      console.error("Failed to upload file:", error); // Log the error to the console
+      console.error("Failed to upload file:", error);
       throw error;
     }
   };
@@ -87,26 +104,18 @@ export default function BasicInfo() {
   ) => {
     const file = event.target.files[0];
     if (file) {
-      console.log("Selected file:", file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageFunction(reader.result); // Set preview image using Data URL
-      };
-      reader.readAsDataURL(file);
-      setFileFunction(file);
-
       try {
-        const uploadedFile = await uploadFileToStorage(file);
+        const isLguLicense = fieldName === "lguLicenseImageId";
+        const uploadedFile = await uploadFileToStorage(file, isLguLicense);
         setValue(fieldName, uploadedFile.$id);
-        console.log(`File uploaded: ${uploadedFile.$id}`);
 
         // Get the preview URL for the uploaded image
         const previewUrl = await getImagePreview(
           uploadedFile.$id,
-          "6789e834002216f21c5c"
+          appwriteConfig.storageBucketId
         );
-        // Update the image preview with the actual URL
         setImageFunction(previewUrl.href || previewUrl.toString());
+        setFileFunction(file);
       } catch (error) {
         console.error("Error uploading file:", error);
       }
@@ -310,7 +319,7 @@ export default function BasicInfo() {
               />
             ) : (
               <Image
-                src="/image/certificate.png"
+                src="/images/certificate.png"
                 alt="LGU License Certificate Placeholder"
                 width={300}
                 height={200}

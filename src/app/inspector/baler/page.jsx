@@ -335,8 +335,7 @@ export default function BalerPage() {
     try {
       // Get image previews with enhanced options
       if (establishment.lguLicenseImageId) {
-        const lguPreview = storage.getFilePreview(
-          appwriteConfig.storageBucketId,
+        const lguPreview = getImagePreview(
           establishment.lguLicenseImageId,
           800, // width
           600, // height
@@ -350,12 +349,11 @@ export default function BalerPage() {
           "FFFFFF", // background
           "jpg" // output
         );
-        setLguLicensePreview(lguPreview.href);
+        setLguLicensePreview(lguPreview);
       }
 
       if (establishment.dotAccreditationImageId) {
-        const dotPreview = storage.getFilePreview(
-          appwriteConfig.storageBucketId,
+        const dotPreview = getImagePreview(
           establishment.dotAccreditationImageId,
           800, // width
           600, // height
@@ -369,7 +367,7 @@ export default function BalerPage() {
           "FFFFFF", // background
           "jpg" // output
         );
-        setDotAccreditationPreview(dotPreview.href);
+        setDotAccreditationPreview(dotPreview);
       }
 
       setLoadingServices(true);

@@ -311,7 +311,7 @@ export default function AdminDashboard() {
               ))}
             </div>
           </nav>
-          <div className="border-t dark:border-gray-700 p-4">
+          <div className="border-t dark:border-red-800 p-4">
             <Button variant="outline" className="w-full" onClick={handleLogout}>
               <LogOut className="mr-2 h-5 w-5" />
               Logout
