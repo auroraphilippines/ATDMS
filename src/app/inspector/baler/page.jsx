@@ -52,6 +52,8 @@ import {
   fetchFacilities,
   fetchEmployees,
   databases,
+  getImagePreview,
+  storage,
 } from "@/services/appwrite";
 import {
   Dialog,
@@ -99,6 +101,8 @@ export default function BalerPage() {
   const [appointmentDate, setAppointmentDate] = useState(null);
   const [isViewModalOpen, setViewModalOpen] = useState(false);
   const [viewEstablishment, setViewEstablishment] = useState(null);
+  const [lguLicensePreview, setLguLicensePreview] = useState(null);
+  const [dotAccreditationPreview, setDotAccreditationPreview] = useState(null);
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
@@ -329,6 +333,45 @@ export default function BalerPage() {
     setViewModalOpen(true);
 
     try {
+      // Get image previews with enhanced options
+      if (establishment.lguLicenseImageId) {
+        const lguPreview = storage.getFilePreview(
+          appwriteConfig.storageBucketId,
+          establishment.lguLicenseImageId,
+          800, // width
+          600, // height
+          "center", // gravity
+          100, // quality
+          2, // borderWidth
+          "E2E8F0", // borderColor (light gray)
+          8, // borderRadius
+          1, // opacity
+          0, // rotation
+          "FFFFFF", // background
+          "jpg" // output
+        );
+        setLguLicensePreview(lguPreview.href);
+      }
+
+      if (establishment.dotAccreditationImageId) {
+        const dotPreview = storage.getFilePreview(
+          appwriteConfig.storageBucketId,
+          establishment.dotAccreditationImageId,
+          800, // width
+          600, // height
+          "center", // gravity
+          100, // quality
+          2, // borderWidth
+          "E2E8F0", // borderColor
+          8, // borderRadius
+          1, // opacity
+          0, // rotation
+          "FFFFFF", // background
+          "jpg" // output
+        );
+        setDotAccreditationPreview(dotPreview.href);
+      }
+
       setLoadingServices(true);
       const services = await fetchServices(establishment.$id);
       setViewServices(services);
@@ -954,32 +997,79 @@ export default function BalerPage() {
 
             <TabsContent value="details">
               <ScrollArea className="h-[300px] w-full rounded-md border p-4">
-                {viewEstablishment &&
-                  Object.entries(viewEstablishment)
-                    .filter(
-                      ([key]) =>
-                        ![
-                          "userId",
-                          "date",
-                          "time",
-                          "$id",
-                          "$createdAt",
-                          "$updatedAt",
-                          "$permissions",
-                          "$databaseId",
-                          "$collectionId",
-                        ].includes(key)
-                    )
-                    .map(([key, value]) => (
-                      <div key={key} className="mb-2">
-                        <strong className="capitalize">
-                          {key.replace(/([A-Z])/g, " $1").trim()}:
-                        </strong>{" "}
-                        <span>
-                          {key === "declineReason" && !value ? "N/A" : value}
-                        </span>
+                {viewEstablishment && (
+                  <>
+                    {Object.entries(viewEstablishment)
+                      .filter(
+                        ([key]) =>
+                          ![
+                            "userId",
+                            "date",
+                            "time",
+                            "$id",
+                            "$createdAt",
+                            "$updatedAt",
+                            "$permissions",
+                            "$databaseId",
+                            "$collectionId",
+                            "lguLicenseImageId",
+                            "dotAccreditationImageId",
+                          ].includes(key)
+                      )
+                      .map(([key, value]) => (
+                        <div key={key} className="mb-2">
+                          <strong className="capitalize">
+                            {key.replace(/([A-Z])/g, " $1").trim()}:
+                          </strong>{" "}
+                          <span>
+                            {key === "declineReason" && !value ? "N/A" : value}
+                          </span>
+                        </div>
+                      ))}
+
+                    {/* Image Previews */}
+                    <div className="mt-4">
+                      <h3 className="font-semibold mb-2">Documents</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <strong>LGU License:</strong>
+                          {lguLicensePreview ? (
+                            <div className="mt-2">
+                              <img
+                                src={lguLicensePreview}
+                                alt="LGU License"
+                                className="max-w-full h-auto rounded-lg border shadow-sm hover:shadow-md transition-shadow duration-200"
+                                loading="lazy"
+                              />
+                            </div>
+                          ) : (
+                            <p className="text-gray-500 italic">
+                              No image available
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <strong>DOT Accreditation:</strong>
+                          {dotAccreditationPreview ? (
+                            <div className="mt-2">
+                              <img
+                                src={dotAccreditationPreview}
+                                alt="DOT Accreditation"
+                                className="max-w-full h-auto rounded-lg border shadow-sm hover:shadow-md transition-shadow duration-200"
+                                loading="lazy"
+                              />
+                            </div>
+                          ) : (
+                            <p className="text-gray-500 italic">
+                              No image available
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    ))}
+                    </div>
+                  </>
+                )}
               </ScrollArea>
             </TabsContent>
             <TabsContent value="services">
