@@ -357,7 +357,7 @@ export default function BasicInfo() {
               />
             ) : (
               <Image
-                src="/image/certificate.png"
+                src="/images/certificate.png"
                 alt="DOT Accreditation License Certificate Placeholder"
                 width={300}
                 height={200}
