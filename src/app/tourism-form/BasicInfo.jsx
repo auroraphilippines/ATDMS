@@ -64,25 +64,21 @@ export default function BasicInfo() {
   const handleSelectChange = (value, name) => {
     setValue(name, value, { shouldValidate: true }); // Trigger validation if required
   };
-  const uploadFileToStorage = async (file, isLguLicense = true) => {
+  const uploadFileToStorage = async (file) => {
     try {
       // Upload file to storage
       const response = await storage.createFile(
-        appwriteConfig.storageBucketId, // Using the config value
+        appwriteConfig.storageBucketId,
         ID.unique(),
         file
       );
 
-      // Create or update document in accommodations collection
-      const documentData = isLguLicense
-        ? { lgulicense: response.$id }
-        : { dotlicense: response.$id };
-
+      // Create document in accommodations collection
       await databases.createDocument(
         appwriteConfig.databaseId,
         appwriteConfig.accommodationsCollectionId,
         ID.unique(),
-        documentData
+        { imageId: response.$id }
       );
 
       return response;
@@ -105,8 +101,7 @@ export default function BasicInfo() {
     const file = event.target.files[0];
     if (file) {
       try {
-        const isLguLicense = fieldName === "lguLicenseImageId";
-        const uploadedFile = await uploadFileToStorage(file, isLguLicense);
+        const uploadedFile = await uploadFileToStorage(file);
         setValue(fieldName, uploadedFile.$id);
 
         // Get the preview URL for the uploaded image
