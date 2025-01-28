@@ -226,17 +226,15 @@ export const signOut = async () => {
 
 export async function submitTourismForm(formData) {
   try {
-    // Ensure declineReason is included
-    const updatedFormData = {
-      ...formData,
-      declineReason: formData.declineReason || "Default value or empty string",
-    };
-
     const result = await databases.createDocument(
       appwriteConfig.databaseId,
       appwriteConfig.accommodationsCollectionId,
       ID.unique(),
-      updatedFormData
+      {
+        ...formData,
+        lgulicense: formData.lguLicenseImageId || null,
+        dotlicense: formData.dotAccreditationImageId || null,
+      }
     );
     return result;
   } catch (error) {
@@ -523,7 +521,7 @@ export async function getImagePreview(fileId, bucketId) {
     const imageUrl = storage.getFilePreview(bucketId, fileId);
     return imageUrl;
   } catch (error) {
-    handleError(error, "Failed to get image preview");
+    console.error("Failed to get image preview:", error);
     return null;
   }
 }

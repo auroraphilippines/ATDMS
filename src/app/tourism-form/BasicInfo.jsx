@@ -13,33 +13,38 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { getImagePreview } from "@/services/appwrite";
-import { storage } from "@/services/appwrite";
-import { databases } from "@/services/appwrite";
+import { getImagePreview, storage, databases } from "@/services/appwrite";
 import { ID } from "appwrite";
 import { appwriteConfig } from "@/services/appwrite";
 
+const STORAGE_BUCKET_ID = "6789e834002216f21c5c";
+const ACCOMMODATIONS_COLLECTION_ID = "6741d7f2000200706b21";
+
 export default function BasicInfo() {
-  const { register, setValue, watch } = useFormContext();
+  const {
+    register,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useFormContext();
   const [lguLicenseImage, setLguLicenseImage] = useState(null);
   const [dotAccreditationImage, setDotAccreditationImage] = useState(null);
   const [lguLicenseFile, setLguLicenseFile] = useState(null);
   const [dotAccreditationFile, setDotAccreditationFile] = useState(null);
 
-  // Watch for image IDs from form context
+  // Watch for image IDs and accommodation ID from form context
   const lguLicenseImageId = watch("lguLicenseImageId");
   const dotAccreditationImageId = watch("dotAccreditationImageId");
+  const accommodationId = watch("accommodationId");
 
   useEffect(() => {
-    // Load existing images if IDs are present
     const loadImages = async () => {
       if (lguLicenseImageId) {
         try {
           const imageUrl = await getImagePreview(
             lguLicenseImageId,
-            "6789e834002216f21c5c"
+            STORAGE_BUCKET_ID
           );
-          // Ensure we have a valid URL
           setLguLicenseImage(imageUrl.href || imageUrl.toString());
         } catch (error) {
           console.error("Error loading LGU license image:", error);
@@ -49,9 +54,8 @@ export default function BasicInfo() {
         try {
           const imageUrl = await getImagePreview(
             dotAccreditationImageId,
-            "6789e834002216f21c5c"
+            STORAGE_BUCKET_ID
           );
-          // Ensure we have a valid URL
           setDotAccreditationImage(imageUrl.href || imageUrl.toString());
         } catch (error) {
           console.error("Error loading DOT accreditation image:", error);
@@ -62,35 +66,31 @@ export default function BasicInfo() {
   }, [lguLicenseImageId, dotAccreditationImageId]);
 
   const handleSelectChange = (value, name) => {
-    setValue(name, value, { shouldValidate: true }); // Trigger validation if required
+    setValue(name, value, { shouldValidate: true });
   };
-  const uploadFileToStorage = async (file) => {
+
+  const uploadFileToStorage = async (file, isLguLicense = true) => {
     try {
-      // Upload file to storage
-      const response = await storage.createFile(
-        appwriteConfig.storageBucketId,
+      // Step 1: Upload file to storage
+      const fileResponse = await storage.createFile(
+        STORAGE_BUCKET_ID,
         ID.unique(),
         file
       );
 
-      // Create document in accommodations collection
-      await databases.createDocument(
-        appwriteConfig.databaseId,
-        appwriteConfig.accommodationsCollectionId,
-        ID.unique(),
-        { imageId: response.$id }
-      );
+      // Step 2: Update form context with only the image IDs
+      if (isLguLicense) {
+        setValue("lguLicenseImageId", fileResponse.$id);
+      } else {
+        setValue("dotAccreditationImageId", fileResponse.$id);
+      }
 
-      return response;
+      return fileResponse;
     } catch (error) {
       console.error("Failed to upload file:", error);
       throw error;
     }
   };
-  useEffect(() => {
-    console.log("LGU License Image ID:", lguLicenseImageId);
-    console.log("DOT Accreditation Image ID:", dotAccreditationImageId);
-  }, [lguLicenseImageId, dotAccreditationImageId]);
 
   const handleImageUpload = async (
     event,
@@ -101,13 +101,13 @@ export default function BasicInfo() {
     const file = event.target.files[0];
     if (file) {
       try {
-        const uploadedFile = await uploadFileToStorage(file);
+        const isLguLicense = fieldName === "lguLicenseImageId";
+        const uploadedFile = await uploadFileToStorage(file, isLguLicense);
         setValue(fieldName, uploadedFile.$id);
 
-        // Get the preview URL for the uploaded image
         const previewUrl = await getImagePreview(
           uploadedFile.$id,
-          appwriteConfig.storageBucketId
+          STORAGE_BUCKET_ID
         );
         setImageFunction(previewUrl.href || previewUrl.toString());
         setFileFunction(file);
@@ -116,15 +116,17 @@ export default function BasicInfo() {
       }
     }
   };
+
   return (
     <TabsContent value="basic" className="space-y-6">
       <Card>
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Municipality */}
             <div className="space-y-2">
               <Label htmlFor="municipality">Municipality</Label>
               <Select
-                value={watch("municipality")} // Bind the current value
+                value={watch("municipality")}
                 onValueChange={(value) =>
                   handleSelectChange(value, "municipality")
                 }
@@ -139,7 +141,14 @@ export default function BasicInfo() {
                   <SelectItem value="Dipaculao">Dipaculao</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.municipality && (
+                <span className="text-red-500 text-sm">
+                  {errors.municipality.message}
+                </span>
+              )}
             </div>
+
+            {/* Establishment Name */}
             <div className="space-y-2">
               <Label htmlFor="establishmentName">Establishment Name</Label>
               <Input
@@ -149,7 +158,14 @@ export default function BasicInfo() {
                   required: "Establishment name is required",
                 })}
               />
+              {errors.establishmentName && (
+                <span className="text-red-500 text-sm">
+                  {errors.establishmentName.message}
+                </span>
+              )}
             </div>
+
+            {/* Business Address */}
             <div className="space-y-2">
               <Label htmlFor="businessAddress">Business Address</Label>
               <Input
@@ -159,7 +175,14 @@ export default function BasicInfo() {
                   required: "Business address is required",
                 })}
               />
+              {errors.businessAddress && (
+                <span className="text-red-500 text-sm">
+                  {errors.businessAddress.message}
+                </span>
+              )}
             </div>
+
+            {/* Contact Number */}
             <div className="space-y-2">
               <Label htmlFor="contactNumber">Contact Number</Label>
               <Input
@@ -174,7 +197,14 @@ export default function BasicInfo() {
                   },
                 })}
               />
+              {errors.contactNumber && (
+                <span className="text-red-500 text-sm">
+                  {errors.contactNumber.message}
+                </span>
+              )}
             </div>
+
+            {/* Accreditation Number */}
             <div className="space-y-2">
               <Label htmlFor="accreditationNumber">Accreditation Number</Label>
               <Input
@@ -184,7 +214,14 @@ export default function BasicInfo() {
                   required: "Accreditation number is required",
                 })}
               />
+              {errors.accreditationNumber && (
+                <span className="text-red-500 text-sm">
+                  {errors.accreditationNumber.message}
+                </span>
+              )}
             </div>
+
+            {/* Expiration Date */}
             <div className="space-y-2">
               <Label htmlFor="expirationDate">Expiration Date</Label>
               <Input
@@ -194,7 +231,14 @@ export default function BasicInfo() {
                   required: "Expiration date is required",
                 })}
               />
+              {errors.expirationDate && (
+                <span className="text-red-500 text-sm">
+                  {errors.expirationDate.message}
+                </span>
+              )}
             </div>
+
+            {/* License Number */}
             <div className="space-y-2">
               <Label htmlFor="licenseNumber">LGU License Number</Label>
               <Input
@@ -204,7 +248,14 @@ export default function BasicInfo() {
                   required: "LGU license number is required",
                 })}
               />
+              {errors.licenseNumber && (
+                <span className="text-red-500 text-sm">
+                  {errors.licenseNumber.message}
+                </span>
+              )}
             </div>
+
+            {/* Contact Person */}
             <div className="space-y-2">
               <Label htmlFor="contactPerson">Contact Person</Label>
               <Input
@@ -214,7 +265,14 @@ export default function BasicInfo() {
                   required: "Contact person is required",
                 })}
               />
+              {errors.contactPerson && (
+                <span className="text-red-500 text-sm">
+                  {errors.contactPerson.message}
+                </span>
+              )}
             </div>
+
+            {/* Designation */}
             <div className="space-y-2">
               <Label htmlFor="designation">Designation</Label>
               <Input
@@ -224,7 +282,14 @@ export default function BasicInfo() {
                   required: "Designation is required",
                 })}
               />
+              {errors.designation && (
+                <span className="text-red-500 text-sm">
+                  {errors.designation.message}
+                </span>
+              )}
             </div>
+
+            {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -239,37 +304,42 @@ export default function BasicInfo() {
                   },
                 })}
               />
+              {errors.email && (
+                <span className="text-red-500 text-sm">
+                  {errors.email.message}
+                </span>
+              )}
             </div>
+
+            {/* Social Media Links */}
             <div className="space-y-2">
               <Label htmlFor="facebook">Facebook</Label>
               <Input
                 id="facebook"
                 placeholder="Enter Facebook URL"
-                {...register("facebook", {
-                  required: "Facebook URL is required",
-                })}
+                {...register("facebook")}
               />
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="instagram">Instagram</Label>
               <Input
                 id="instagram"
                 placeholder="Enter Instagram URL"
-                {...register("instagram", {
-                  required: "Instagram URL is required",
-                })}
+                {...register("instagram")}
               />
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="twitter">Twitter</Label>
               <Input
                 id="twitter"
                 placeholder="Enter Twitter URL"
-                {...register("twitter", {
-                  required: "Twitter URL is required",
-                })}
+                {...register("twitter")}
               />
             </div>
+
+            {/* Website */}
             <div className="space-y-2">
               <Label htmlFor="website">Other Website</Label>
               <Input
@@ -277,7 +347,6 @@ export default function BasicInfo() {
                 type="url"
                 placeholder="Enter website URL"
                 {...register("website", {
-                  required: "Website is required",
                   pattern: {
                     value:
                       /^(https?:\/\/)?([a-zA-Z0-9\-]+\.)+[a-zA-Z]{2,}(:\d+)?(\/.*)?$/,
@@ -285,22 +354,29 @@ export default function BasicInfo() {
                   },
                 })}
               />
+              {errors.website && (
+                <span className="text-red-500 text-sm">
+                  {errors.website.message}
+                </span>
+              )}
             </div>
+
+            {/* Booking Company */}
             <div className="space-y-2">
               <Label htmlFor="bookingCompany">Booking Company</Label>
               <Input
                 id="bookingCompany"
                 placeholder="Enter booking company"
-                {...register("bookingCompany", {
-                  required: "Booking company is required",
-                })}
+                {...register("bookingCompany")}
               />
             </div>
           </div>
         </CardContent>
       </Card>
 
+      {/* Image Upload Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        {/* LGU License Certificate */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">LGU License Certificate</h3>
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
@@ -329,7 +405,7 @@ export default function BasicInfo() {
                   e,
                   setLguLicenseImage,
                   setLguLicenseFile,
-                  "lguLicenseImageId" // Field name to save uploaded file ID
+                  "lguLicenseImageId"
                 )
               }
               className="mt-4"
@@ -337,6 +413,7 @@ export default function BasicInfo() {
           </div>
         </div>
 
+        {/* DOT Accreditation Certificate */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">
             DOT Accreditation License Certificate
@@ -367,7 +444,7 @@ export default function BasicInfo() {
                   e,
                   setDotAccreditationImage,
                   setDotAccreditationFile,
-                  "dotAccreditationImageId" // Field name to save uploaded file ID
+                  "dotAccreditationImageId"
                 )
               }
               className="mt-4"

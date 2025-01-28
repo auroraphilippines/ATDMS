@@ -91,6 +91,8 @@ import {
 } from "@/components/ui/tooltip";
 import SettingsPage from "./settings";
 
+const STORAGE_BUCKET_ID = "6789e834002216f21c5c";
+
 export default function BalerPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [accommodations, setAccommodations] = useState([]);
@@ -127,6 +129,8 @@ export default function BalerPage() {
   const [loadingCottages, setLoadingCottages] = useState(true);
   const [loadingFacilities, setLoadingFacilities] = useState(true);
   const [loadingEmployees, setLoadingEmployees] = useState(true);
+  const [lguLicenseName, setLguLicenseName] = useState(null);
+  const [dotAccreditationName, setDotAccreditationName] = useState(null);
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -333,43 +337,18 @@ export default function BalerPage() {
     setViewModalOpen(true);
 
     try {
-      // Get image previews with enhanced options
-      if (establishment.lguLicenseImageId) {
-        const lguPreview = getImagePreview(
-          establishment.lguLicenseImageId,
-          800, // width
-          600, // height
-          "center", // gravity
-          100, // quality
-          2, // borderWidth
-          "E2E8F0", // borderColor (light gray)
-          8, // borderRadius
-          1, // opacity
-          0, // rotation
-          "FFFFFF", // background
-          "jpg" // output
-        );
-        setLguLicensePreview(lguPreview);
+      // Set the image URLs directly from the establishment data
+      if (establishment.LGUid) {
+        setLguLicensePreview(establishment.LGUid);
+        setLguLicenseName("LGU License");
       }
 
-      if (establishment.dotAccreditationImageId) {
-        const dotPreview = getImagePreview(
-          establishment.dotAccreditationImageId,
-          800, // width
-          600, // height
-          "center", // gravity
-          100, // quality
-          2, // borderWidth
-          "E2E8F0", // borderColor
-          8, // borderRadius
-          1, // opacity
-          0, // rotation
-          "FFFFFF", // background
-          "jpg" // output
-        );
-        setDotAccreditationPreview(dotPreview);
+      if (establishment.dotid) {
+        setDotAccreditationPreview(establishment.dotid);
+        setDotAccreditationName("DOT Accreditation");
       }
 
+      // Fetch other establishment details
       setLoadingServices(true);
       const services = await fetchServices(establishment.$id);
       setViewServices(services);
@@ -395,6 +374,7 @@ export default function BalerPage() {
       setViewEmployees(employees);
       setLoadingEmployees(false);
     } catch (error) {
+      console.error("Error fetching establishment details:", error);
       toast.error("Failed to fetch establishment details");
     }
   };
@@ -590,6 +570,47 @@ export default function BalerPage() {
         </div>
       </CardContent>
     </Card>
+  );
+
+  // Add helper functions for file operations
+  const getFileView = (fileId) => {
+    return storage.getFileView(STORAGE_BUCKET_ID, fileId);
+  };
+
+  const getFileDownload = (fileId) => {
+    return storage.getFileDownload(STORAGE_BUCKET_ID, fileId);
+  };
+
+  // Update the Dialog content to include image previews and actions
+  const renderFileSection = (title, fileUrl, fileName) => (
+    <div className="space-y-2">
+      <h3 className="font-semibold">{title}</h3>
+      {fileUrl ? (
+        <div className="p-4 border rounded-lg space-y-4">
+          <p className="text-sm font-medium">
+            {title === "LGU License Certificate"
+              ? "LGU License"
+              : "DOT Accreditation"}
+          </p>
+
+          <div className="relative h-48 w-full">
+            <img
+              src={fileUrl}
+              alt={title}
+              className="object-contain w-full h-full"
+            />
+          </div>
+
+          <div className="flex space-x-2">
+            <Button size="sm" onClick={() => window.open(fileUrl, "_blank")}>
+              View
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <p className="text-gray-500 italic">No file uploaded</p>
+      )}
+    </div>
   );
 
   if (!authChecked) {
@@ -978,14 +999,14 @@ export default function BalerPage() {
         </SheetContent>
       </Sheet>
       <Dialog open={isViewModalOpen} onOpenChange={setViewModalOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{viewEstablishment?.establishmentName}</DialogTitle>
-            <DialogDescription>Establishment Details</DialogDescription>
+            <DialogTitle>View Establishment Details</DialogTitle>
           </DialogHeader>
-          <Tabs defaultValue="details" className="w-full">
+          <Tabs defaultValue="basic" className="w-full">
             <TabsList>
-              <TabsTrigger value="details">Accommodations</TabsTrigger>
+              <TabsTrigger value="basic">Basic Info</TabsTrigger>
+              <TabsTrigger value="documents">Documents</TabsTrigger>
               <TabsTrigger value="services">Services</TabsTrigger>
               <TabsTrigger value="rooms">Rooms</TabsTrigger>
               <TabsTrigger value="cottages">Cottages</TabsTrigger>
@@ -993,7 +1014,7 @@ export default function BalerPage() {
               <TabsTrigger value="employees">Employees</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="details">
+            <TabsContent value="basic">
               <ScrollArea className="h-[300px] w-full rounded-md border p-4">
                 {viewEstablishment && (
                   <>
@@ -1012,6 +1033,8 @@ export default function BalerPage() {
                             "$collectionId",
                             "lguLicenseImageId",
                             "dotAccreditationImageId",
+                            "LGUid",
+                            "dotid",
                           ].includes(key)
                       )
                       .map(([key, value]) => (
@@ -1024,51 +1047,23 @@ export default function BalerPage() {
                           </span>
                         </div>
                       ))}
-
-                    {/* Image Previews */}
-                    <div className="mt-4">
-                      <h3 className="font-semibold mb-2">Documents</h3>
-                      <div className="space-y-4">
-                        <div>
-                          <strong>LGU License:</strong>
-                          {lguLicensePreview ? (
-                            <div className="mt-2">
-                              <img
-                                src={lguLicensePreview}
-                                alt="LGU License"
-                                className="max-w-full h-auto rounded-lg border shadow-sm hover:shadow-md transition-shadow duration-200"
-                                loading="lazy"
-                              />
-                            </div>
-                          ) : (
-                            <p className="text-gray-500 italic">
-                              No image available
-                            </p>
-                          )}
-                        </div>
-
-                        <div>
-                          <strong>DOT Accreditation:</strong>
-                          {dotAccreditationPreview ? (
-                            <div className="mt-2">
-                              <img
-                                src={dotAccreditationPreview}
-                                alt="DOT Accreditation"
-                                className="max-w-full h-auto rounded-lg border shadow-sm hover:shadow-md transition-shadow duration-200"
-                                loading="lazy"
-                              />
-                            </div>
-                          ) : (
-                            <p className="text-gray-500 italic">
-                              No image available
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
                   </>
                 )}
               </ScrollArea>
+            </TabsContent>
+            <TabsContent value="documents">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {renderFileSection(
+                  "LGU License Certificate",
+                  viewEstablishment?.LGUid,
+                  "LGU License"
+                )}
+                {renderFileSection(
+                  "DOT Accreditation Certificate",
+                  viewEstablishment?.dotid,
+                  "DOT Accreditation"
+                )}
+              </div>
             </TabsContent>
             <TabsContent value="services">
               <ScrollArea className="h-[300px] w-full rounded-md border p-4">

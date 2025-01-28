@@ -7,7 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Modal from "@/components/modal";
 import { useAuthUserStore } from "@/services/user";
-import { createDocument, signOut, uploadImage } from "@/services/appwrite";
+import {
+  createDocument,
+  signOut,
+  uploadImage,
+  storage,
+  appwriteConfig,
+} from "@/services/appwrite";
 import BasicInfo from "./BasicInfo";
 import Facilities from "./Facilities";
 import Rooms from "./Rooms";
@@ -17,6 +23,8 @@ import Employees from "./Employees";
 import { v4 as uuidv4 } from "uuid";
 import toast from "react-hot-toast";
 import { ArrowLeft } from "lucide-react";
+
+const STORAGE_BUCKET_ID = "6789e834002216f21c5c";
 
 export default function TourismForm() {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -45,8 +53,9 @@ export default function TourismForm() {
     return url;
   };
 
-  const onSubmit = async (data = {}) => {
+  const onSubmit = async (data) => {
     try {
+      setIsLoading(true);
       const userId = sessionStorage.getItem("userId");
       if (!userId) {
         throw new Error(
@@ -54,17 +63,48 @@ export default function TourismForm() {
         );
       }
 
-      // Get the image files from the form
-      const lguLicenseImage = data.lguLicenseImage; // Assuming you have the image file in form data
-      const dotAccreditationImage = data.dotAccreditationImage;
+      // Get the image IDs from the form data
+      const lguLicenseImageId = data.lguLicenseImageId;
+      const dotAccreditationImageId = data.dotAccreditationImageId;
 
-      // Upload the images and get the IDs
-      const lguLicenseImageId = lguLicenseImage
-        ? await handleImageUpload(lguLicenseImage)
-        : null;
-      const dotAccreditationImageId = dotAccreditationImage
-        ? await handleImageUpload(dotAccreditationImage)
-        : null;
+      // Generate image URLs only if IDs exist
+      let LGUid = null;
+      let dotid = null;
+
+      if (lguLicenseImageId) {
+        LGUid = `https://cloud.appwrite.io/v1/storage/buckets/${STORAGE_BUCKET_ID}/files/${lguLicenseImageId}/view?project=${appwriteConfig.projectId}`;
+      }
+
+      if (dotAccreditationImageId) {
+        dotid = `https://cloud.appwrite.io/v1/storage/buckets/${STORAGE_BUCKET_ID}/files/${dotAccreditationImageId}/view?project=${appwriteConfig.projectId}`;
+      }
+
+      // Create the basic info document with image IDs and URLs
+      await createDocument("6741d7f2000200706b21", {
+        accommodationId: uuidv4(),
+        municipality: data.municipality,
+        establishmentName: data.establishmentName,
+        businessAddress: data.businessAddress,
+        contactNumber: data.contactNumber,
+        accreditationNumber: data.accreditationNumber,
+        expirationDate: data.expirationDate,
+        licenseNumber: data.licenseNumber,
+        contactPerson: data.contactPerson,
+        designation: data.designation,
+        email: data.email,
+        facebook: data.facebook || "",
+        instagram: data.instagram || "",
+        twitter: data.twitter || "",
+        website: normalizeUrl(data.website || ""),
+        bookingCompany: data.bookingCompany || "",
+        userId,
+        status: "Awaiting Inspection",
+        // Store image IDs and URLs
+        lguLicenseImageId,
+        dotAccreditationImageId,
+        LGUid,
+        dotid,
+      });
 
       // Proceed with the rest of the form data submission
       const {
@@ -181,28 +221,6 @@ export default function TourismForm() {
         beachVolleyballchecked: !!data.sportsRecreation?.beachVolleyball,
         tableTennischecked: !!data.sportsRecreation?.tableTennis,
       };
-
-      // Save Basic Info
-      await createDocument("6741d7f2000200706b21", {
-        accommodationId,
-        municipality,
-        establishmentName,
-        businessAddress,
-        contactNumber,
-        accreditationNumber,
-        expirationDate,
-        licenseNumber,
-        contactPerson,
-        designation,
-        email,
-        facebook,
-        instagram,
-        twitter,
-        website: normalizedWebsite,
-        bookingCompany,
-        userId, // Store the ID of the logged-in user
-        status: "Awaiting Inspection", // Set the status
-      });
 
       // Save Facilities
       await createDocument("6741e31a0022f8e43fb3", facilitiesData);
@@ -375,10 +393,14 @@ export default function TourismForm() {
         foreignmaleNum: parseInt(data.foreignmaleNum) || 0, // Number of foreign male employees
         foreignfemaleNum: parseInt(data.foreignfemaleNum) || 0, // Number of foreign female employees
       });
-      // After successful submission, navigate to FormStatus with form data
+
+      setIsLoading(false);
+      toast.success("Form submitted successfully!");
       router.push("/client");
     } catch (error) {
+      setIsLoading(false);
       console.error("Error submitting form:", error);
+      toast.error("Error submitting form. Please try again.");
     }
   };
   // Map the tab order for navigation
