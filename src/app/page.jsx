@@ -9,12 +9,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import {
-  Hotel,
   ClipboardCheck,
   ShieldCheck,
-  TrendingUp,
   Users,
-  Bell,
   Award,
   ClipboardList,
   Search,
