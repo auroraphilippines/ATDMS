@@ -32,11 +32,6 @@ export const databases = new Databases(client);
 // Initialize Storage
 export const storage = new Storage(client);
 
-// Add error handling utility
-const handleError = (error, customMessage) => {
-  throw new Error(customMessage || "An unexpected error occurred");
-};
-
 // Sign In
 export async function signIn(email, password) {
   try {
