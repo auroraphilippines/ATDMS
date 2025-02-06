@@ -12,7 +12,7 @@ const compat = new FlatCompat({
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals"),
   {
-    parserOptions: {
+    languageOptions: {
       ecmaVersion: 2021,
       sourceType: "module",
     },
