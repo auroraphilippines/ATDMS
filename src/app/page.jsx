@@ -51,14 +51,6 @@ export default function CATMS() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    toast({
-      title: "Preview Only",
-      description: "This is a preview version of the system.",
-      duration: 5000,
-    });
-  }, [toast]);
-
   const openVideoModal = () => {
     setIsVideoModalOpen(true);
   };
