@@ -60,14 +60,14 @@ export default function PrivacyPolicy() {
         <title>Central Aurora Tourism Management System - Privacy Policy</title>
         <meta
           name="description"
-          content="Privacy Policy for C.A.T.M.S - Protecting your data and rights"
+          content="Privacy Policy for CATMS - Protecting your data and rights"
         />
       </Head>
       <div className="min-h-screen bg-gray-50">
         <header className="bg-indigo-700 text-white py-4 sticky top-0 z-50">
           <div className="container mx-auto px-4">
             <div className="flex justify-between items-center">
-              <h1 className="text-2xl font-bold">C.A.T.M.S Privacy Policy</h1>
+              <h1 className="text-2xl font-bold">CATMS Privacy Policy</h1>
               <div className="flex space-x-4">
                 <Button
                   variant="outline"
@@ -116,27 +116,27 @@ export default function PrivacyPolicy() {
             <Card className="p-6 max-w-4xl mx-auto">
               <h1 className="text-3xl font-bold mb-6">
                 Privacy Policy for Central Aurora Tourism Management System
-                (C.A.T.M.S)
+                (CATMS)
               </h1>
 
               <section id="introduction" className="mb-8">
                 <h2 className="text-2xl font-semibold mb-4">1. Introduction</h2>
                 <p className="mb-4">
                   Welcome to the Central Aurora Tourism Management System
-                  (C.A.T.M.S) Privacy Policy. This document outlines our
-                  commitment to protecting your privacy and personal information
-                  in compliance with Republic Act No. 10173, also known as the
-                  Data Privacy Act of 2012.
+                  (CATMS) Privacy Policy. This document outlines our commitment
+                  to protecting your privacy and personal information in
+                  compliance with Republic Act No. 10173, also known as the Data
+                  Privacy Act of 2012.
                 </p>
                 <p className="mb-4">
-                  C.A.T.M.S is operated by the Government Office of Tourism of
+                  CATMS is operated by the Government Office of Tourism of
                   Aurora Province, Philippines. We are dedicated to ensuring
                   that your personal information is collected, used, and
                   protected in accordance with Philippine law and international
                   best practices.
                 </p>
                 <p>
-                  By using C.A.T.M.S, you agree to the terms outlined in this
+                  By using CATMS, you agree to the terms outlined in this
                   Privacy Policy. We encourage you to read this document
                   carefully to understand how we handle your personal
                   information.
@@ -169,13 +169,6 @@ export default function PrivacyPolicy() {
                   <li>Email address</li>
                   <li>Phone number</li>
                   <li>Mailing address</li>
-                  <li>
-                    Job title and company affiliation (for business users)
-                  </li>
-                  <li>
-                    Government-issued identification numbers (when required by
-                    law)
-                  </li>
                   <li>User preferences and settings</li>
                 </ul>
                 <p>
@@ -192,8 +185,8 @@ export default function PrivacyPolicy() {
                 <p className="mb-4">
                   The Government Office of Tourism of Aurora Province uses the
                   collected personal information for various purposes aimed at
-                  improving our services and your experience with C.A.T.M.S.
-                  These include:
+                  improving our services and your experience with CATMS. These
+                  include:
                 </p>
                 <ul className="list-disc pl-6 mb-4">
                   <li>Enhancing and personalizing user experience</li>
@@ -340,7 +333,7 @@ export default function PrivacyPolicy() {
                   We encourage our users to be aware when they leave our site
                   and to read the privacy statements of any other site that
                   collects personally identifiable information. This Privacy
-                  Policy applies solely to information collected by C.A.T.M.S.
+                  Policy applies solely to information collected by CATMS.
                 </p>
               </section>
 
@@ -364,8 +357,8 @@ export default function PrivacyPolicy() {
                 <p>
                   You acknowledge and agree that it is your responsibility to
                   review this privacy policy periodically and become aware of
-                  modifications. Your continued use of C.A.T.M.S after we post
-                  any modifications to the Privacy Policy on this page will
+                  modifications. Your continued use of CATMS after we post any
+                  modifications to the Privacy Policy on this page will
                   constitute your acknowledgment of the modifications and your
                   consent to abide and be bound by the modified Privacy Policy.
                 </p>
@@ -376,7 +369,7 @@ export default function PrivacyPolicy() {
                 <p className="mb-4">
                   In accordance with the Data Privacy Act of 2012, users have
                   certain rights regarding their personal data. As a user of
-                  C.A.T.M.S, you have the right to:
+                  CATMS, you have the right to:
                 </p>
                 <ul className="list-disc pl-6 mb-4">
                   <li>
@@ -412,7 +405,7 @@ export default function PrivacyPolicy() {
                   9. Software License and Copyright Notice
                 </h2>
                 <p className="mb-4">
-                  The Central Aurora Tourism Management System (C.A.T.M.S) is
+                  The Central Aurora Tourism Management System (CATMS) is
                   proprietary software owned and operated by the Government
                   Office of Tourism of Aurora Province, Philippines. All rights
                   reserved.

@@ -15,12 +15,13 @@ import {
   Award,
   ClipboardList,
   Search,
-  CheckCircle,
   BarChart2,
   FileText,
   Building,
   Zap,
 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 
 const images = [
   "/images/bay.png",
@@ -36,6 +37,7 @@ const images = [
 ];
 
 export default function CATMS() {
+  const { toast } = useToast();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [expandedFAQ, setExpandedFAQ] = useState(null);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
@@ -47,6 +49,16 @@ export default function CATMS() {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    toast({
+      title: "Preview Mode",
+      description:
+        "This is a preview version of CATMS. Some features may be limited.",
+      duration: null,
+      className: "bg-amber-100 border-amber-400",
+    });
+  }, [toast]);
 
   const openVideoModal = () => {
     setIsVideoModalOpen(true);
@@ -308,7 +320,7 @@ export default function CATMS() {
                   {images.map((src, index) => (
                     <Image
                       key={src}
-                      src={src}
+                      src={src || "/placeholder.svg"}
                       alt={`Slide ${index + 1}`}
                       fill
                       className={`rounded-lg shadow-lg object-cover transition-opacity duration-1000 ${
@@ -621,6 +633,7 @@ export default function CATMS() {
           </div>
         </div>
       )}
+      <Toaster />
     </div>
   );
 }
