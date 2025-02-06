@@ -34,7 +34,6 @@ export const storage = new Storage(client);
 
 // Add error handling utility
 const handleError = (error, customMessage) => {
-  console.error(error);
   throw new Error(customMessage || "An unexpected error occurred");
 };
 
@@ -55,7 +54,7 @@ export async function signIn(email, password) {
         }
       }
     } catch (e) {
-      console.debug("No existing sessions to clear");
+      // Silent fail for session clearing
     }
 
     // Clear any existing storage/cookies
@@ -64,15 +63,10 @@ export async function signIn(email, password) {
 
     // Attempt to create a new session
     const session = await account.createEmailPasswordSession(email, password);
-    console.log("Session created:", session); // Log session creation
-
-    // Fetch current account details
     const currentAccount = await account.get();
     if (!currentAccount) {
       throw new Error("Authentication failed");
     }
-
-    console.log("Account details:", currentAccount); // Log account details
 
     // Fetch the user document from the collection
     const databaseId = "672cfccb002f456cb332"; // Your database ID
@@ -89,16 +83,12 @@ export async function signIn(email, password) {
     }
 
     const userDocument = response.documents[0];
-    console.log("User document:", userDocument); // Log the user document
-
-    // Store the document ID (Appwrite document ID) and role in session storage
-    sessionStorage.setItem("userId", userDocument.$id); // Storing document ID
+    sessionStorage.setItem("userId", userDocument.$id);
     sessionStorage.setItem("userRole", userDocument.role || "default");
 
     return currentAccount;
   } catch (error) {
     handleError(error, "Login failed. Please check your credentials.");
-    console.error("Error during sign in:", error); // Log the error
   }
 }
 
@@ -236,17 +226,15 @@ export const signOut = async () => {
 
 export async function submitTourismForm(formData) {
   try {
-    // Ensure declineReason is included
-    const updatedFormData = {
-      ...formData,
-      declineReason: formData.declineReason || "Default value or empty string",
-    };
-
     const result = await databases.createDocument(
       appwriteConfig.databaseId,
       appwriteConfig.accommodationsCollectionId,
       ID.unique(),
-      updatedFormData
+      {
+        ...formData,
+        lgulicense: formData.lguLicenseImageId || null,
+        dotlicense: formData.dotAccreditationImageId || null,
+      }
     );
     return result;
   } catch (error) {
@@ -264,11 +252,10 @@ export const createDocument = async (collectionId, data) => {
       data
     );
   } catch (error) {
-    console.error(
-      `Error creating document in collection ${collectionId}:`,
-      error
+    handleError(
+      error,
+      `Failed to create document in collection ${collectionId}`
     );
-    throw error;
   }
 };
 
@@ -534,7 +521,7 @@ export async function getImagePreview(fileId, bucketId) {
     const imageUrl = storage.getFilePreview(bucketId, fileId);
     return imageUrl;
   } catch (error) {
-    console.error("Error getting image preview:", error);
+    console.error("Failed to get image preview:", error);
     return null;
   }
 }

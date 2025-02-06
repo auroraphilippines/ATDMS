@@ -430,7 +430,10 @@ export default function Dashboard() {
         <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
           Dashboard Overview
         </h2>
-        <Button onClick={generateReport} className="flex items-center gap-2">
+        <Button
+          onClick={generateReport}
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white dark:bg-green-700 dark:hover:bg-green-800"
+        >
           <Download className="h-4 w-4" />
           Export Report
         </Button>

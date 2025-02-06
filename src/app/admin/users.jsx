@@ -138,7 +138,7 @@ export default function UsersPage() {
         <h1 className="text-3xl font-bold">Users</h1>
         <Button
           onClick={generateUserReport}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white dark:bg-green-700 dark:hover:bg-green-800"
         >
           <Download className="h-4 w-4" />
           Export Users Report

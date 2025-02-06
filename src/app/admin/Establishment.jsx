@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Search,
   Archive,
+  List,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -29,7 +30,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { fetchAccommodations } from "@/services/appwrite";
+import { ID, Query } from "appwrite";
+import { fetchAccommodations, databases } from "@/services/appwrite";
 import { toast } from "react-toastify";
 import {
   Dialog,
@@ -40,6 +42,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
+import { ToastContainer } from "react-toastify";
 
 export default function Establishments() {
   const [establishments, setEstablishments] = useState([]);
@@ -51,6 +54,34 @@ export default function Establishments() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedYear, setSelectedYear] = useState(2025);
+  const [archivedEstablishments, setArchivedEstablishments] = useState([]);
+  const [showArchived, setShowArchived] = useState(false);
+
+  useEffect(() => {
+    const fetchArchived = async () => {
+      try {
+        const response = await databases.listDocuments(
+          "672cfccb002f456cb332",
+          "678cebdf0030e7ca5fb7",
+          [Query.orderDesc("archivedAt")]
+        );
+        setArchivedEstablishments(response.documents);
+      } catch (error) {
+        console.error("Failed to fetch archived establishments:", error);
+        toast.error("Failed to load archived establishments");
+      }
+    };
+
+    if (showArchived) {
+      fetchArchived();
+    }
+
+    // Cleanup function
+    return () => {
+      // Cleanup any pending requests or listeners
+      setArchivedEstablishments([]);
+    };
+  }, [showArchived]);
 
   useEffect(() => {
     const loadEstablishments = async () => {
@@ -76,59 +107,161 @@ export default function Establishments() {
     };
 
     loadEstablishments();
+
+    // Cleanup function
+    return () => {
+      // Cleanup any pending requests or listeners
+      setEstablishments([]);
+      setIsLoading(false);
+    };
   }, [selectedYear]);
 
-  const handleArchive = async () => {
+  const checkForDuplicates = async () => {
     try {
-      // Create CSV content
-      const csvHeader = [
-        "Establishment Name",
-        "Municipality",
-        "Business Address",
-        "Status",
-        "Decline Reason",
-        "Contact Person",
-        "Contact Number",
-        "Email",
-        "Accreditation Number",
-        "Expiration Date",
-      ].join(",");
-
-      const csvRows = establishments.map((est) =>
-        [
-          `"${est.establishmentName || ""}"`,
-          `"${est.municipality || ""}"`,
-          `"${est.businessAddress || ""}"`,
-          `"${est.status || ""}"`,
-          `"${est.declineReason || ""}"`,
-          `"${est.contactPerson || ""}"`,
-          `"${est.contactNumber || ""}"`,
-          `"${est.email || ""}"`,
-          `"${est.accreditationNumber || ""}"`,
-          `"${
-            est.expirationDate
-              ? new Date(est.expirationDate).toLocaleDateString()
-              : ""
-          }"`,
-        ].join(",")
+      const response = await databases.listDocuments(
+        "672cfccb002f456cb332",
+        "678cebdf0030e7ca5fb7",
+        [Query.equal("yearArchived", selectedYear)]
       );
 
-      const csvContent = [csvHeader, ...csvRows].join("\n");
+      const existingArchives = response.documents;
+      const duplicates = establishments.filter((est) =>
+        existingArchives.some(
+          (archive) =>
+            archive.establishmentName === est.establishmentName &&
+            archive.yearArchived === selectedYear
+        )
+      );
 
-      // Create and download CSV file
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const link = document.createElement("a");
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", `establishments_${selectedYear}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      toast.success(`Establishments exported to CSV for ${selectedYear}`);
+      return duplicates;
     } catch (error) {
-      console.error("Error exporting to CSV:", error);
-      toast.error(`Failed to export establishments for ${selectedYear}`);
+      console.error("Error checking duplicates:", error);
+      return [];
+    }
+  };
+
+  const handleArchive = async () => {
+    // Check for duplicates first
+    const duplicates = await checkForDuplicates();
+
+    if (duplicates.length > 0) {
+      toast.error(
+        <div>
+          <p>
+            Cannot archive. The following establishments are already archived
+            for year {selectedYear}:
+          </p>
+          <ul className="mt-2 list-disc pl-4">
+            {duplicates.map((dup) => (
+              <li key={dup.$id}>{dup.establishmentName}</li>
+            ))}
+          </ul>
+        </div>,
+        {
+          autoClose: 5000,
+          theme: "colored",
+        }
+      );
+      return;
+    }
+
+    // Proceed with confirmation if no duplicates
+    if (
+      !window.confirm(
+        `Are you sure you want to archive ${establishments.length} establishments for year ${selectedYear}?`
+      )
+    ) {
+      return;
+    }
+
+    // Show "archiving in progress" toast
+    const archivingToast = toast.loading("Archiving establishments...", {
+      position: "top-right",
+      autoClose: false,
+      closeButton: false,
+      draggable: true,
+      closeOnClick: false,
+      theme: "colored",
+    });
+
+    try {
+      const archivePromises = establishments.map(async (establishment) => {
+        const formattedExpirationDate = establishment.expirationDate
+          ? new Date(establishment.expirationDate).toISOString()
+          : "";
+        const formattedAppointmentDate = establishment.appointmentDate
+          ? new Date(establishment.appointmentDate).toISOString()
+          : "";
+
+        const documentData = {
+          establishmentName: String(establishment.establishmentName || ""),
+          municipality: String(establishment.municipality || ""),
+          businessAddress: String(establishment.businessAddress || ""),
+          status: String(establishment.status || ""),
+          contactPerson: String(establishment.contactPerson || ""),
+          contactNumber: String(establishment.contactNumber || ""),
+          email: String(establishment.email || ""),
+          accreditationNumber: String(establishment.accreditationNumber || ""),
+          originalId: String(establishment.$id || ""),
+          expirationDate: formattedExpirationDate,
+          archivedAt: new Date().toISOString(),
+          yearArchived: Number(selectedYear),
+          declineReason: String(establishment.declineReason || ""),
+          website: String(establishment.website || ""),
+          facebook: String(establishment.facebook || ""),
+          instagram: String(establishment.instagram || ""),
+          twitter: String(establishment.twitter || ""),
+          bookingCompany: String(establishment.bookingCompany || ""),
+          designation: String(establishment.designation || ""),
+          licenseNumber: String(establishment.licenseNumber || ""),
+          appointmentDate: formattedAppointmentDate,
+        };
+
+        return await databases.createDocument(
+          "672cfccb002f456cb332",
+          "678cebdf0030e7ca5fb7",
+          ID.unique(),
+          documentData
+        );
+      });
+
+      await Promise.all(archivePromises);
+
+      // Update the loading toast to success
+      toast.update(archivingToast, {
+        render: `Successfully archived ${establishments.length} establishments for year ${selectedYear}`,
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
+        closeButton: true,
+        closeOnClick: true,
+        theme: "colored",
+        icon: "🎉",
+      });
+
+      // Refresh archived list if showing
+      if (showArchived) {
+        const response = await databases.listDocuments(
+          "672cfccb002f456cb332",
+          "678cebdf0030e7ca5fb7",
+          [Query.orderDesc("archivedAt")]
+        );
+        setArchivedEstablishments(response.documents);
+      }
+    } catch (error) {
+      console.error("Error archiving establishments:", error);
+
+      // Update the loading toast to error
+      toast.update(archivingToast, {
+        render: `Failed to archive establishments for ${selectedYear}`,
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+        closeButton: true,
+        closeOnClick: true,
+        theme: "colored",
+        icon: "❌",
+      });
     }
   };
 
@@ -162,25 +295,90 @@ export default function Establishments() {
   };
 
   return (
-    <div className="container mx-auto p-6 dark:bg-gray-900 dark:text-gray-100">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold">Establishments</h2>
-        <div className="flex items-center space-x-4">
-          <div className="relative">
+    <div className="container mx-auto p-6 space-y-6">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
+
+      {/* Header Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <h2 className="text-2xl font-semibold">Establishments Management</h2>
+          <div className="flex flex-wrap items-center gap-3">
+            <Select
+              value={selectedYear.toString()}
+              onValueChange={(value) => setSelectedYear(parseInt(value))}
+            >
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Select Year" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 5 }, (_, i) => 2025 - i).map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Button
+              onClick={() => setShowArchived(!showArchived)}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              {showArchived ? (
+                <>
+                  <List className="h-4 w-4" />
+                  Current List
+                </>
+              ) : (
+                <>
+                  <Archive className="h-4 w-4" />
+                  Archived List
+                </>
+              )}
+            </Button>
+
+            <Button
+              onClick={handleArchive}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white dark:bg-green-700 dark:hover:bg-green-800"
+              disabled={establishments.length === 0}
+            >
+              <Archive className="h-4 w-4" />
+              Archive ({establishments.length})
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Search and Filter Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
             <Input
               type="search"
               placeholder="Search establishments..."
-              className="w-[300px] pl-9 rounded-full bg-gray-100 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600"
+              className="pl-9 w-full"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+
           <Select
             value={selectedMunicipality}
             onValueChange={setSelectedMunicipality}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Select Municipality" />
             </SelectTrigger>
             <SelectContent>
@@ -194,153 +392,206 @@ export default function Establishments() {
                 ))}
             </SelectContent>
           </Select>
-          <Select
-            value={selectedYear.toString()}
-            onValueChange={(value) => setSelectedYear(parseInt(value))}
-          >
-            <SelectTrigger className="w-[120px]">
-              <SelectValue placeholder="Select Year" />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: 5 }, (_, i) => 2025 - i).map((year) => (
-                <SelectItem key={year} value={year.toString()}>
-                  {year}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button onClick={handleArchive} className="flex items-center gap-2">
-            <Archive className="h-4 w-4" />
-            Archive
-          </Button>
         </div>
       </div>
-      <Card className="dark:bg-gray-800">
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <p>Loading establishments...</p>
-          </div>
-        ) : filteredEstablishments.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-sky-50 hover:bg-sky-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200">
-                <TableHead className="font-semibold">
-                  Establishment Name
-                </TableHead>
-                <TableHead className="font-semibold">Municipality</TableHead>
-                <TableHead className="font-semibold">Status</TableHead>
-                <TableHead className="font-semibold">Decline Reason</TableHead>
-                <TableHead className="text-right font-semibold">
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentItems.map((establishment) => (
-                <TableRow
-                  key={establishment.$id}
-                  className="hover:bg-sky-50 dark:hover:bg-gray-700 transition-colors duration-200"
-                >
-                  <TableCell className="font-medium">
-                    {establishment.establishmentName}
-                  </TableCell>
-                  <TableCell>{establishment.municipality}</TableCell>
-                  <TableCell>
-                    <Badge
-                      className={
-                        establishment.status === "Inspection Completed" ||
-                        establishment.status === "Inspection Complete"
-                          ? "bg-blue-100 text-blue-800"
-                          : establishment.status === "Awaiting Inspection"
-                          ? "bg-orange-100 text-yellow-500"
-                          : establishment.status === "Requires Follow-up"
-                          ? "bg-purple-100 text-red-600"
-                          : establishment.status === "Inspection in Progress"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
-                      }
-                    >
-                      {establishment.status === "Inspection Complete" ? (
-                        <>
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Inspection Completed
-                        </>
-                      ) : establishment.status === "Awaiting Inspection" ? (
-                        <>
-                          <Clock className="h-4 w-4 mr-1" />
-                          Awaiting Inspection
-                        </>
-                      ) : establishment.status === "Requires Follow-up" ? (
-                        <>
-                          <AlertCircle className="h-4 w-4 mr-1" />
-                          Requires Follow-up
-                        </>
-                      ) : establishment.status === "Inspection in Progress" ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-1" />
-                          Inspection in Progress
-                        </>
-                      ) : (
-                        establishment.status || ""
-                      )}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{establishment.declineReason || "N/A"}</TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleViewEstablishment(establishment)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
+
+      {/* Table Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        {showArchived ? (
+          <Card className="dark:bg-gray-800">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Establishment Name</TableHead>
+                  <TableHead>Municipality</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Year Archived</TableHead>
+                  <TableHead>Archive Date</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {archivedEstablishments.map((archive) => (
+                  <TableRow key={archive.$id}>
+                    <TableCell>{archive.establishmentName}</TableCell>
+                    <TableCell>{archive.municipality}</TableCell>
+                    <TableCell>
+                      <Badge
+                        className={
+                          archive.status === "Approved"
+                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                            : archive.status === "Pending"
+                            ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                            : archive.status === "Declined"
+                            ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                            : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+                        }
+                      >
+                        {archive.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{archive.yearArchived}</TableCell>
+                    <TableCell>
+                      {new Date(archive.archivedAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewEstablishment(archive)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {archivedEstablishments.length === 0 && (
+              <div className="flex justify-center items-center h-32">
+                <p>No archived establishments found.</p>
+              </div>
+            )}
+          </Card>
         ) : (
-          <div className="flex justify-center items-center h-64">
-            <p>No establishments found.</p>
-          </div>
+          <Card className="dark:bg-gray-800">
+            {isLoading ? (
+              <div className="flex justify-center items-center h-64">
+                <p>Loading establishments...</p>
+              </div>
+            ) : filteredEstablishments.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-sky-50 hover:bg-sky-100 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200">
+                    <TableHead className="font-semibold">
+                      Establishment Name
+                    </TableHead>
+                    <TableHead className="font-semibold">
+                      Municipality
+                    </TableHead>
+                    <TableHead className="font-semibold">Status</TableHead>
+                    <TableHead className="font-semibold">
+                      Decline Reason
+                    </TableHead>
+                    <TableHead className="text-right font-semibold">
+                      Actions
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {currentItems.map((establishment) => (
+                    <TableRow
+                      key={establishment.$id}
+                      className="hover:bg-sky-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                    >
+                      <TableCell className="font-medium">
+                        {establishment.establishmentName}
+                      </TableCell>
+                      <TableCell>{establishment.municipality}</TableCell>
+                      <TableCell>
+                        <Badge
+                          className={
+                            establishment.status === "Inspection Completed" ||
+                            establishment.status === "Inspection Complete"
+                              ? "bg-blue-100 text-blue-800"
+                              : establishment.status === "Awaiting Inspection"
+                              ? "bg-orange-100 text-yellow-500"
+                              : establishment.status === "Requires Follow-up"
+                              ? "bg-purple-100 text-red-600"
+                              : establishment.status ===
+                                "Inspection in Progress"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-gray-100 text-gray-800"
+                          }
+                        >
+                          {establishment.status === "Inspection Complete" ? (
+                            <>
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Inspection Completed
+                            </>
+                          ) : establishment.status === "Awaiting Inspection" ? (
+                            <>
+                              <Clock className="h-4 w-4 mr-1" />
+                              Awaiting Inspection
+                            </>
+                          ) : establishment.status === "Requires Follow-up" ? (
+                            <>
+                              <AlertCircle className="h-4 w-4 mr-1" />
+                              Requires Follow-up
+                            </>
+                          ) : establishment.status ===
+                            "Inspection in Progress" ? (
+                            <>
+                              <RefreshCw className="h-4 w-4 mr-1" />
+                              Inspection in Progress
+                            </>
+                          ) : (
+                            establishment.status || ""
+                          )}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {establishment.declineReason || "N/A"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewEstablishment(establishment)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="flex justify-center items-center h-64">
+                <p>No establishments found.</p>
+              </div>
+            )}
+            {filteredEstablishments.length > 0 && (
+              <div className="flex items-center justify-between px-4 py-4 bg-sky-50 dark:bg-gray-700 rounded-b-lg">
+                <p className="text-sm text-gray-700">
+                  Showing {indexOfFirstItem + 1} to{" "}
+                  {Math.min(indexOfLastItem, filteredEstablishments.length)} of{" "}
+                  {filteredEstablishments.length} entries
+                </p>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
+                    disabled={currentPage === 1}
+                    className="w-24"
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-2" />
+                    Previous
+                  </Button>
+                  <span className="text-sm font-medium">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    }
+                    disabled={currentPage === totalPages}
+                    className="w-24"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Card>
         )}
-        {filteredEstablishments.length > 0 && (
-          <div className="flex items-center justify-between px-4 py-4 bg-sky-50 dark:bg-gray-700 rounded-b-lg">
-            <p className="text-sm text-gray-700">
-              Showing {indexOfFirstItem + 1} to{" "}
-              {Math.min(indexOfLastItem, filteredEstablishments.length)} of{" "}
-              {filteredEstablishments.length} entries
-            </p>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="w-24"
-              >
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                Previous
-              </Button>
-              <span className="text-sm font-medium">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-                className="w-24"
-              >
-                Next
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
-            </div>
-          </div>
-        )}
-      </Card>
+      </div>
       {selectedEstablishment && (
         <Dialog open={isModalOpen} onOpenChange={() => setIsModalOpen(false)}>
           <DialogContent className="sm:max-w-[425px] dark:bg-gray-800 dark:text-gray-100">

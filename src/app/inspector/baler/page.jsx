@@ -52,6 +52,8 @@ import {
   fetchFacilities,
   fetchEmployees,
   databases,
+  getImagePreview,
+  storage,
 } from "@/services/appwrite";
 import {
   Dialog,
@@ -89,6 +91,8 @@ import {
 } from "@/components/ui/tooltip";
 import SettingsPage from "./settings";
 
+const STORAGE_BUCKET_ID = "6789e834002216f21c5c";
+
 export default function BalerPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [accommodations, setAccommodations] = useState([]);
@@ -99,6 +103,8 @@ export default function BalerPage() {
   const [appointmentDate, setAppointmentDate] = useState(null);
   const [isViewModalOpen, setViewModalOpen] = useState(false);
   const [viewEstablishment, setViewEstablishment] = useState(null);
+  const [lguLicensePreview, setLguLicensePreview] = useState(null);
+  const [dotAccreditationPreview, setDotAccreditationPreview] = useState(null);
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
@@ -123,6 +129,8 @@ export default function BalerPage() {
   const [loadingCottages, setLoadingCottages] = useState(true);
   const [loadingFacilities, setLoadingFacilities] = useState(true);
   const [loadingEmployees, setLoadingEmployees] = useState(true);
+  const [lguLicenseName, setLguLicenseName] = useState(null);
+  const [dotAccreditationName, setDotAccreditationName] = useState(null);
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -329,6 +337,18 @@ export default function BalerPage() {
     setViewModalOpen(true);
 
     try {
+      // Set the image URLs directly from the establishment data
+      if (establishment.LGUid) {
+        setLguLicensePreview(establishment.LGUid);
+        setLguLicenseName("LGU License");
+      }
+
+      if (establishment.dotid) {
+        setDotAccreditationPreview(establishment.dotid);
+        setDotAccreditationName("DOT Accreditation");
+      }
+
+      // Fetch other establishment details
       setLoadingServices(true);
       const services = await fetchServices(establishment.$id);
       setViewServices(services);
@@ -354,6 +374,7 @@ export default function BalerPage() {
       setViewEmployees(employees);
       setLoadingEmployees(false);
     } catch (error) {
+      console.error("Error fetching establishment details:", error);
       toast.error("Failed to fetch establishment details");
     }
   };
@@ -549,6 +570,47 @@ export default function BalerPage() {
         </div>
       </CardContent>
     </Card>
+  );
+
+  // Add helper functions for file operations
+  const getFileView = (fileId) => {
+    return storage.getFileView(STORAGE_BUCKET_ID, fileId);
+  };
+
+  const getFileDownload = (fileId) => {
+    return storage.getFileDownload(STORAGE_BUCKET_ID, fileId);
+  };
+
+  // Update the Dialog content to include image previews and actions
+  const renderFileSection = (title, fileUrl, fileName) => (
+    <div className="space-y-2">
+      <h3 className="font-semibold">{title}</h3>
+      {fileUrl ? (
+        <div className="p-4 border rounded-lg space-y-4">
+          <p className="text-sm font-medium">
+            {title === "LGU License Certificate"
+              ? "LGU License"
+              : "DOT Accreditation"}
+          </p>
+
+          <div className="relative h-48 w-full">
+            <img
+              src={fileUrl}
+              alt={title}
+              className="object-contain w-full h-full"
+            />
+          </div>
+
+          <div className="flex space-x-2">
+            <Button size="sm" onClick={() => window.open(fileUrl, "_blank")}>
+              View
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <p className="text-gray-500 italic">No file uploaded</p>
+      )}
+    </div>
   );
 
   if (!authChecked) {
@@ -937,14 +999,14 @@ export default function BalerPage() {
         </SheetContent>
       </Sheet>
       <Dialog open={isViewModalOpen} onOpenChange={setViewModalOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{viewEstablishment?.establishmentName}</DialogTitle>
-            <DialogDescription>Establishment Details</DialogDescription>
+            <DialogTitle>View Establishment Details</DialogTitle>
           </DialogHeader>
-          <Tabs defaultValue="details" className="w-full">
+          <Tabs defaultValue="basic" className="w-full">
             <TabsList>
-              <TabsTrigger value="details">Accommodations</TabsTrigger>
+              <TabsTrigger value="basic">Basic Info</TabsTrigger>
+              <TabsTrigger value="documents">Documents</TabsTrigger>
               <TabsTrigger value="services">Services</TabsTrigger>
               <TabsTrigger value="rooms">Rooms</TabsTrigger>
               <TabsTrigger value="cottages">Cottages</TabsTrigger>
@@ -952,35 +1014,56 @@ export default function BalerPage() {
               <TabsTrigger value="employees">Employees</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="details">
+            <TabsContent value="basic">
               <ScrollArea className="h-[300px] w-full rounded-md border p-4">
-                {viewEstablishment &&
-                  Object.entries(viewEstablishment)
-                    .filter(
-                      ([key]) =>
-                        ![
-                          "userId",
-                          "date",
-                          "time",
-                          "$id",
-                          "$createdAt",
-                          "$updatedAt",
-                          "$permissions",
-                          "$databaseId",
-                          "$collectionId",
-                        ].includes(key)
-                    )
-                    .map(([key, value]) => (
-                      <div key={key} className="mb-2">
-                        <strong className="capitalize">
-                          {key.replace(/([A-Z])/g, " $1").trim()}:
-                        </strong>{" "}
-                        <span>
-                          {key === "declineReason" && !value ? "N/A" : value}
-                        </span>
-                      </div>
-                    ))}
+                {viewEstablishment && (
+                  <>
+                    {Object.entries(viewEstablishment)
+                      .filter(
+                        ([key]) =>
+                          ![
+                            "userId",
+                            "date",
+                            "time",
+                            "$id",
+                            "$createdAt",
+                            "$updatedAt",
+                            "$permissions",
+                            "$databaseId",
+                            "$collectionId",
+                            "lguLicenseImageId",
+                            "dotAccreditationImageId",
+                            "LGUid",
+                            "dotid",
+                          ].includes(key)
+                      )
+                      .map(([key, value]) => (
+                        <div key={key} className="mb-2">
+                          <strong className="capitalize">
+                            {key.replace(/([A-Z])/g, " $1").trim()}:
+                          </strong>{" "}
+                          <span>
+                            {key === "declineReason" && !value ? "N/A" : value}
+                          </span>
+                        </div>
+                      ))}
+                  </>
+                )}
               </ScrollArea>
+            </TabsContent>
+            <TabsContent value="documents">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {renderFileSection(
+                  "LGU License Certificate",
+                  viewEstablishment?.LGUid,
+                  "LGU License"
+                )}
+                {renderFileSection(
+                  "DOT Accreditation Certificate",
+                  viewEstablishment?.dotid,
+                  "DOT Accreditation"
+                )}
+              </div>
             </TabsContent>
             <TabsContent value="services">
               <ScrollArea className="h-[300px] w-full rounded-md border p-4">

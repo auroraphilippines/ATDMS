@@ -122,8 +122,11 @@ const FormStatus = () => {
 
     const { status } = accommodationDetails;
 
-    // Hide button for "Inspection in Progress"
-    if (status === "Inspection in Progress") {
+    // Hide button for "Inspection in Progress" and "Awaiting Inspection"
+    if (
+      status === "Inspection in Progress" ||
+      status === "Awaiting Inspection"
+    ) {
       return null;
     }
 
