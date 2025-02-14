@@ -427,14 +427,14 @@ export async function fetchActivityLogs() {
     const accommodationsResponse = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.accommodationsCollectionId,
-      [Query.orderDesc("$createdAt"), Query.limit(100)]
+      [Query.orderDesc("$createdAt"), Query.limit(10)]
     );
 
     // Fetch logs from users collection
     const usersResponse = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.userCollectionId,
-      [Query.orderDesc("$createdAt"), Query.limit(100)]
+      [Query.orderDesc("$createdAt"), Query.limit(10)]
     );
 
     // Combine and map the results
