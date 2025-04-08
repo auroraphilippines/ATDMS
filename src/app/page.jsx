@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
+import { Analytics } from "@vercel/analytics/react";
 
 const images = [
   "/images/bay.png",
