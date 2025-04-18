@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { TourProvider, useTour } from "@reactour/tour";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -37,6 +38,112 @@ const images = [
   "/images/m.png",
   "/images/caption.png",
 ];
+
+const steps = [
+  {
+    selector: ".hero-section",
+    content: (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-center"
+      >
+        <h3 className="text-xl font-bold mb-2">Welcome to CATMS!</h3>
+        <p>
+          Let's take a quick tour of our features and discover how we can help
+          you streamline your accommodation inspections.
+        </p>
+      </motion.div>
+    ),
+  },
+  {
+    selector: "#features",
+    content: (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-center"
+      >
+        <h3 className="text-xl font-bold mb-2">Powerful Features</h3>
+        <p>
+          Discover our key features that make accommodation inspection easier
+          and more efficient. From digital checklists to real-time reporting,
+          we've got you covered.
+        </p>
+      </motion.div>
+    ),
+  },
+  {
+    selector: "#process",
+    content: (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-center"
+      >
+        <h3 className="text-xl font-bold mb-2">Streamlined Process</h3>
+        <p>
+          Learn about our streamlined inspection process in three simple steps.
+          We've designed it to save you time and ensure thorough evaluations.
+        </p>
+      </motion.div>
+    ),
+  },
+  {
+    selector: "#faq",
+    content: (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-center"
+      >
+        <h3 className="text-xl font-bold mb-2">Got Questions?</h3>
+        <p>
+          Find answers to common questions about our system. We're here to help
+          you understand how CATMS can benefit your business.
+        </p>
+      </motion.div>
+    ),
+  },
+  {
+    selector: ".cta-buttons",
+    content: (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-center"
+      >
+        <h3 className="text-xl font-bold mb-2">Ready to Get Started?</h3>
+        <p>
+          Sign up now or watch our demo to see CATMS in action. We can't wait to
+          help you transform your inspection process!
+        </p>
+      </motion.div>
+    ),
+  },
+];
+
+function TourContent() {
+  const { setIsOpen } = useTour();
+
+  useEffect(() => {
+    const hasVisited = localStorage.getItem("hasVisited");
+    if (!hasVisited) {
+      const timer = setTimeout(() => {
+        setIsOpen(true);
+        localStorage.setItem("hasVisited", "true");
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [setIsOpen]);
+
+  return null;
+}
 
 export default function CATMS() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -220,410 +327,465 @@ export default function CATMS() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <header className="bg-indigo-700 text-white sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link href="/" className="flex items-center">
-                <Image
-                  src="/images/lap.png"
-                  alt="AccomoInspect Logo"
-                  width={70}
-                  height={70}
-                />
-              </Link>
+    <TourProvider
+      steps={steps}
+      styles={{
+        popover: (base) => ({
+          ...base,
+          "--reactour-accent": "#4f46e5",
+          borderRadius: 12,
+          padding: 24,
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+        }),
+        dot: (base, { current }) => ({
+          ...base,
+          background: current ? "#4f46e5" : "#ccc",
+          width: current ? 12 : 8,
+          height: current ? 12 : 8,
+          transition: "all 0.3s ease",
+        }),
+        button: (base) => ({
+          ...base,
+          padding: "8px 16px",
+          borderRadius: 6,
+          transition: "all 0.3s ease",
+        }),
+        close: (base) => ({
+          ...base,
+          display: "none",
+        }),
+      }}
+      showNavigation={true}
+      showBadge={false}
+      showDots={true}
+      showNavigationNumber={true}
+      disableInteraction={false}
+      disableDotsNavigation={false}
+      disableKeyboardNavigation={false}
+      inViewThreshold={100}
+      maskClassName="bg-black/50"
+      className="helper"
+      accentColor="#4f46e5"
+      position="bottom"
+      padding={10}
+      maskSpace={10}
+      arrowColor="#fff"
+    >
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <header className="bg-indigo-700 text-white sticky top-0 z-50">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Link href="/" className="flex items-center">
+                  <Image
+                    src="/images/lap.png"
+                    alt="AccomoInspect Logo"
+                    width={70}
+                    height={70}
+                  />
+                </Link>
+              </div>
+              <nav className="hidden md:block">
+                <ul className="flex space-x-6">
+                  <li>
+                    <Link href="/" className="hover:underline">
+                      Home
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="#features" className="hover:underline">
+                      Features
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="#process" className="hover:underline">
+                      Process
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="#faq" className="hover:underline">
+                      FAQ
+                    </Link>
+                  </li>
+                </ul>
+              </nav>
             </div>
-            <nav className="hidden md:block">
-              <ul className="flex space-x-6">
-                <li>
-                  <Link href="/" className="hover:underline">
-                    Home
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#features" className="hover:underline">
-                    Features
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#process" className="hover:underline">
-                    Process
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#faq" className="hover:underline">
-                    FAQ
-                  </Link>
-                </li>
-              </ul>
-            </nav>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main>
-        <section className="bg-gradient-to-b from-indigo-800 to-indigo-600 py-20">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col md:flex-row items-center">
-              <motion.div
-                className="md:w-1/2 mb-8 md:mb-0"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <h1 className="text-4xl md:text-5xl font-bold text-sky-100 mb-4">
-                  Central Aurora Tourism Management System
-                </h1>
-                <p className="text-xl text-sky-200 mb-6">
-                  CATMS: Your all-in-one solution for efficient, transparent,
-                  and standardized accommodation inspections. Empower your team
-                  to maintain world-class standards and enhance guest
-                  satisfaction.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button
-                    size="lg"
-                    variant="secondary"
-                    className="bg-amber-400 text-indigo-900 hover:bg-amber-300"
-                    onClick={openVideoModal}
-                  >
-                    Watch Demo
-                  </Button>
-                  <Link href="/login">
+        <main>
+          <section className="hero-section bg-gradient-to-b from-indigo-800 to-indigo-600 py-20">
+            <div className="container mx-auto px-4">
+              <div className="flex flex-col md:flex-row items-center">
+                <motion.div
+                  className="md:w-1/2 mb-8 md:mb-0"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <h1 className="text-4xl md:text-5xl font-bold text-sky-100 mb-4">
+                    Central Aurora Tourism Management System
+                  </h1>
+                  <p className="text-xl text-sky-200 mb-6">
+                    CATMS: Your all-in-one solution for efficient, transparent,
+                    and standardized accommodation inspections. Empower your
+                    team to maintain world-class standards and enhance guest
+                    satisfaction.
+                  </p>
+                  <div className="cta-buttons flex flex-col sm:flex-row gap-4">
                     <Button
                       size="lg"
                       variant="secondary"
                       className="bg-amber-400 text-indigo-900 hover:bg-amber-300"
+                      onClick={openVideoModal}
                     >
-                      Sign Up
+                      Watch Demo
                     </Button>
-                  </Link>
-                </div>
-              </motion.div>
-              <motion.div
-                className="md:w-1/2"
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                <div className="relative w-full h-[400px]">
-                  {images.map((src, index) => (
-                    <Image
-                      key={src}
-                      src={src}
-                      alt={`Slide ${index + 1}`}
-                      fill
-                      className={`rounded-lg shadow-lg object-cover transition-opacity duration-1000 ${
-                        index === currentImageIndex
-                          ? "opacity-100"
-                          : "opacity-0"
-                      }`}
-                      priority={index === 0}
-                    />
-                  ))}
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </section>
-
-        <section id="features" className="py-20 bg-white">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12 text-teal-800">
-              Why Choose CATMS?
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {features.map((feature, index) => (
-                <Card
-                  key={index}
-                  className="hover:shadow-lg transition-shadow duration-300"
+                    <Link href="/login">
+                      <Button
+                        size="lg"
+                        variant="secondary"
+                        className="bg-amber-400 text-indigo-900 hover:bg-amber-300"
+                      >
+                        Sign Up
+                      </Button>
+                    </Link>
+                  </div>
+                </motion.div>
+                <motion.div
+                  className="md:w-1/2"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  <CardContent className="p-6">
-                    <feature.icon size={40} className="text-indigo-600 mb-4" />
-                    <h3 className="text-xl font-semibold mb-2 text-indigo-800">
-                      {feature.title}
-                    </h3>
-                    <p className="text-gray-600">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="process" className="py-20 bg-gray-50">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12 text-teal-800">
-              Streamlined Inspection Process
-            </h2>
-            <Tabs defaultValue="pre-inspection" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-8">
-                {inspectionSteps.map((step, index) => (
-                  <TabsTrigger
-                    key={index}
-                    value={step.title.toLowerCase().replace(" ", "-")}
-                    className="text-indigo-600 data-[state=active]:bg-indigo-100"
-                  >
-                    {step.title}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              {inspectionSteps.map((step, index) => (
-                <TabsContent
-                  key={index}
-                  value={step.title.toLowerCase().replace(" ", "-")}
-                >
-                  <Card className="border-teal-200">
-                    <CardContent className="p-6">
-                      <div className="flex items-center mb-4">
-                        <step.icon size={24} className="text-teal-600 mr-4" />
-                        <h3 className="text-2xl font-bold text-teal-800">
-                          {step.title}
-                        </h3>
-                      </div>
-                      <p className="text-gray-600 mb-4">{step.description}</p>
-                      <div className="aspect-video bg-teal-50 rounded-lg overflow-hidden">
-                        {step.videoUrl ? (
-                          <video
-                            src={step.videoUrl}
-                            controls
-                            className="w-full h-full object-cover"
-                          >
-                            Your browser does not support the video tag.
-                          </video>
-                        ) : (
-                          <p className="flex items-center justify-center h-full text-teal-500">
-                            Video coming soon
-                          </p>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              ))}
-            </Tabs>
-          </div>
-        </section>
-
-        <section className="py-20 bg-white">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12 text-teal-800">
-              Empowering Your Accommodation Business
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <FileText size={48} className="text-teal-600 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2 text-teal-800">
-                    For Inspectors
-                  </h3>
-                  <p className="text-gray-600">
-                    Streamline your workflow, access real-time data, and conduct
-                    more efficient room-by-room inspections.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Building size={48} className="text-teal-600 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2 text-teal-800">
-                    For Property Managers
-                  </h3>
-                  <p className="text-gray-600">
-                    Maintain high standards, track performance, and improve
-                    guest satisfaction with data-driven insights.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Zap size={48} className="text-teal-600 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2 text-teal-800">
-                    Administrator of Provincial Tourism Office
-                  </h3>
-                  <p className="text-gray-600">
-                    Gain comprehensive insights, ensure brand consistency, and
-                    drive continuous improvement across your properties using
-                    our web-based system.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
-
-        <section id="faq" className="py-20 bg-gray-50">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12 text-teal-800">
-              Frequently Asked Questions
-            </h2>
-            <div className="space-y-4 w-full max-w-3xl mx-auto">
-              {faqItems.map((item, index) => (
-                <Card key={index} className="overflow-hidden">
-                  <CardContent className="p-0">
-                    <button
-                      className="flex justify-between items-center w-full p-4 text-left focus:outline-none focus:ring-2 focus:ring-teal-500"
-                      onClick={() => toggleFAQ(index)}
-                    >
-                      <span className="text-lg font-semibold text-teal-700">
-                        {item.question}
-                      </span>
-                      {expandedFAQ === index ? (
-                        <ChevronUp className="h-5 w-5 text-teal-500" />
-                      ) : (
-                        <ChevronDown className="h-5 w-5 text-teal-500" />
-                      )}
-                    </button>
-                    <AnimatePresence>
-                      {expandedFAQ === index && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className="px-4 pb-4"
-                        >
-                          <div className="text-gray-600">{item.answer}</div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="bg-gray-800 text-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <h3 className="text-lg font-semibold mb-4">
-                About Central Aurora Tourism Management System
-              </h3>
-              <p className="text-sm">
-                CATMS is the leading accommodation inspection management system,
-                streamlining quality control processes for hotels, resorts, and
-                vacation rentals worldwide. Our mission is to elevate
-                hospitality standards and enhance guest experiences through
-                efficient, data-driven inspections.
-              </p>
-              <div className="flex space-x-4 mt-4">
-                <Image
-                  src="/images/DOT.png"
-                  alt="DOT"
-                  width={80}
-                  height={80}
-                  className="object-contain"
-                />
-                <Image
-                  src="/images/lap.png"
-                  alt="AURORA"
-                  width={80}
-                  height={80}
-                  className="object-contain"
-                />
-                <Image
-                  src="/images/bgaurora.png"
-                  alt="TOURISM"
-                  width={80}
-                  height={80}
-                  className="object-contain"
-                />
+                  <div className="relative w-full h-[400px]">
+                    {images.map((src, index) => (
+                      <Image
+                        key={src}
+                        src={src}
+                        alt={`Slide ${index + 1}`}
+                        fill
+                        className={`rounded-lg shadow-lg object-cover transition-opacity duration-1000 ${
+                          index === currentImageIndex
+                            ? "opacity-100"
+                            : "opacity-0"
+                        }`}
+                        priority={index === 0}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
               </div>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-              <ul className="space-y-2">
-                <li>
-                  <Link href="#features" className="text-sm hover:underline">
-                    Features
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#process" className="text-sm hover:underline">
-                    Our Process
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#faq" className="text-sm hover:underline">
-                    FAQ
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/privacy" className="text-sm hover:underline">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="https://beta.tourism.gov.ph/accreditations/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm hover:underline flex items-center gap-1 group"
-                  >
-                    DOT Accreditation Portal
-                    <svg
-                      className="w-4 h-4 inline transition-transform group-hover:translate-x-0.5"
-                      fill="true"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">
-                Contact Information
-              </h3>
-              <p className="text-sm">123 Hospitality Avenue, Global City</p>
-              <p className="text-sm">Phone: (123) 456-7890</p>
-              <p className="text-sm">Email: auroratourismdev@outlook.com</p>
-            </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-gray-700 text-center">
-            <p className="text-sm">
-              &copy; {new Date().getFullYear()} CATMS All rights reserved.
-              Develop by クリスチャン ジョセフ マリグメン.
-            </p>
-          </div>
-        </div>
-      </footer>
+          </section>
 
-      {isVideoModalOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              closeVideoModal();
-            }
-          }}
-        >
-          <div className="relative w-full max-w-4xl bg-white rounded-lg shadow-lg">
-            <div className="aspect-video">
-              <video
-                src="/videos/demo.mp4"
-                controls
-                className="w-full h-full rounded-lg"
-                title="Demo Video"
-              >
-                Your browser does not support the video tag.
-              </video>
+          <section id="features" className="py-20 bg-white">
+            <div className="container mx-auto px-4">
+              <h2 className="text-3xl font-bold text-center mb-12 text-teal-800">
+                Why Choose CATMS?
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {features.map((feature, index) => (
+                  <Card
+                    key={index}
+                    className="hover:shadow-lg transition-shadow duration-300"
+                  >
+                    <CardContent className="p-6">
+                      <feature.icon
+                        size={40}
+                        className="text-indigo-600 mb-4"
+                      />
+                      <h3 className="text-xl font-semibold mb-2 text-indigo-800">
+                        {feature.title}
+                      </h3>
+                      <p className="text-gray-600">{feature.description}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section id="process" className="py-20 bg-gray-50">
+            <div className="container mx-auto px-4">
+              <h2 className="text-3xl font-bold text-center mb-12 text-teal-800">
+                Streamlined Inspection Process
+              </h2>
+              <Tabs defaultValue="pre-inspection" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 mb-8">
+                  {inspectionSteps.map((step, index) => (
+                    <TabsTrigger
+                      key={index}
+                      value={step.title.toLowerCase().replace(" ", "-")}
+                      className="text-indigo-600 data-[state=active]:bg-indigo-100"
+                    >
+                      {step.title}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+                {inspectionSteps.map((step, index) => (
+                  <TabsContent
+                    key={index}
+                    value={step.title.toLowerCase().replace(" ", "-")}
+                  >
+                    <Card className="border-teal-200">
+                      <CardContent className="p-6">
+                        <div className="flex items-center mb-4">
+                          <step.icon size={24} className="text-teal-600 mr-4" />
+                          <h3 className="text-2xl font-bold text-teal-800">
+                            {step.title}
+                          </h3>
+                        </div>
+                        <p className="text-gray-600 mb-4">{step.description}</p>
+                        <div className="aspect-video bg-teal-50 rounded-lg overflow-hidden">
+                          {step.videoUrl ? (
+                            <video
+                              src={step.videoUrl}
+                              controls
+                              className="w-full h-full object-cover"
+                            >
+                              Your browser does not support the video tag.
+                            </video>
+                          ) : (
+                            <p className="flex items-center justify-center h-full text-teal-500">
+                              Video coming soon
+                            </p>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                ))}
+              </Tabs>
+            </div>
+          </section>
+
+          <section className="py-20 bg-white">
+            <div className="container mx-auto px-4">
+              <h2 className="text-3xl font-bold text-center mb-12 text-teal-800">
+                Empowering Your Accommodation Business
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <FileText
+                      size={48}
+                      className="text-teal-600 mx-auto mb-4"
+                    />
+                    <h3 className="text-xl font-semibold mb-2 text-teal-800">
+                      For Inspectors
+                    </h3>
+                    <p className="text-gray-600">
+                      Streamline your workflow, access real-time data, and
+                      conduct more efficient room-by-room inspections.
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <Building
+                      size={48}
+                      className="text-teal-600 mx-auto mb-4"
+                    />
+                    <h3 className="text-xl font-semibold mb-2 text-teal-800">
+                      For Property Managers
+                    </h3>
+                    <p className="text-gray-600">
+                      Maintain high standards, track performance, and improve
+                      guest satisfaction with data-driven insights.
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <Zap size={48} className="text-teal-600 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2 text-teal-800">
+                      Administrator of Provincial Tourism Office
+                    </h3>
+                    <p className="text-gray-600">
+                      Gain comprehensive insights, ensure brand consistency, and
+                      drive continuous improvement across your properties using
+                      our web-based system.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </section>
+
+          <section id="faq" className="py-20 bg-gray-50">
+            <div className="container mx-auto px-4">
+              <h2 className="text-3xl font-bold text-center mb-12 text-teal-800">
+                Frequently Asked Questions
+              </h2>
+              <div className="space-y-4 w-full max-w-3xl mx-auto">
+                {faqItems.map((item, index) => (
+                  <Card key={index} className="overflow-hidden">
+                    <CardContent className="p-0">
+                      <button
+                        className="flex justify-between items-center w-full p-4 text-left focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        onClick={() => toggleFAQ(index)}
+                      >
+                        <span className="text-lg font-semibold text-teal-700">
+                          {item.question}
+                        </span>
+                        {expandedFAQ === index ? (
+                          <ChevronUp className="h-5 w-5 text-teal-500" />
+                        ) : (
+                          <ChevronDown className="h-5 w-5 text-teal-500" />
+                        )}
+                      </button>
+                      <AnimatePresence>
+                        {expandedFAQ === index && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="px-4 pb-4"
+                          >
+                            <div className="text-gray-600">{item.answer}</div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <footer className="bg-gray-800 text-white py-12">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div>
+                <h3 className="text-lg font-semibold mb-4">
+                  About Central Aurora Tourism Management System
+                </h3>
+                <p className="text-sm">
+                  CATMS is the leading accommodation inspection management
+                  system, streamlining quality control processes for hotels,
+                  resorts, and vacation rentals worldwide. Our mission is to
+                  elevate hospitality standards and enhance guest experiences
+                  through efficient, data-driven inspections.
+                </p>
+                <div className="flex space-x-4 mt-4">
+                  <Image
+                    src="/images/DOT.png"
+                    alt="DOT"
+                    width={80}
+                    height={80}
+                    className="object-contain"
+                  />
+                  <Image
+                    src="/images/lap.png"
+                    alt="AURORA"
+                    width={80}
+                    height={80}
+                    className="object-contain"
+                  />
+                  <Image
+                    src="/images/bgaurora.png"
+                    alt="TOURISM"
+                    width={80}
+                    height={80}
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+                <ul className="space-y-2">
+                  <li>
+                    <Link href="#features" className="text-sm hover:underline">
+                      Features
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="#process" className="text-sm hover:underline">
+                      Our Process
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="#faq" className="text-sm hover:underline">
+                      FAQ
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/privacy" className="text-sm hover:underline">
+                      Privacy Policy
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="https://beta.tourism.gov.ph/accreditations/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm hover:underline flex items-center gap-1 group"
+                    >
+                      DOT Accreditation Portal
+                      <svg
+                        className="w-4 h-4 inline transition-transform group-hover:translate-x-0.5"
+                        fill="true"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                        />
+                      </svg>
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-4">
+                  Contact Information
+                </h3>
+                <p className="text-sm">123 Hospitality Avenue, Global City</p>
+                <p className="text-sm">Phone: (123) 456-7890</p>
+                <p className="text-sm">Email: auroratourismdev@outlook.com</p>
+              </div>
+            </div>
+            <div className="mt-8 pt-8 border-t border-gray-700 text-center">
+              <p className="text-sm">
+                &copy; {new Date().getFullYear()} CATMS All rights reserved.
+                Develop by クリスチャン ジョセフ マリグメン.
+              </p>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        </footer>
+
+        {isVideoModalOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                closeVideoModal();
+              }
+            }}
+          >
+            <div className="relative w-full max-w-4xl bg-white rounded-lg shadow-lg">
+              <div className="aspect-video">
+                <video
+                  src="/videos/demo.mp4"
+                  controls
+                  className="w-full h-full rounded-lg"
+                  title="Demo Video"
+                >
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      <TourContent />
+    </TourProvider>
   );
 }
