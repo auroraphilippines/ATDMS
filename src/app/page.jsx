@@ -145,17 +145,117 @@ function TourContent() {
   return null;
 }
 
+function StartupScreen() {
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-900"
+        >
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 1.2, opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col items-center justify-center"
+          >
+            <Image
+              src="/images/lap.png"
+              alt="CATMS Logo"
+              width={200}
+              height={200}
+              className="mb-8 animate-pulse"
+            />
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: "200px" }}
+              transition={{ duration: 2, ease: "easeInOut" }}
+              className="h-1 bg-gradient-to-r from-amber-400 to-indigo-400 rounded-full"
+            />
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 export default function CATMS() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [expandedFAQ, setExpandedFAQ] = useState(null);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [activeTab, setActiveTab] = useState("home");
+  const [isImageTransitioning, setIsImageTransitioning] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [activeSection, setActiveSection] = useState("home");
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+      setIsImageTransitioning(true);
+      setTimeout(() => {
+        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+        setIsImageTransitioning(false);
+      }, 500);
     }, 5000);
 
-    return () => clearInterval(interval);
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = {
+        home: document.querySelector(".hero-section"),
+        features: document.querySelector("#features"),
+        process: document.querySelector("#process"),
+        faq: document.querySelector("#faq"),
+      };
+
+      const scrollPosition = window.scrollY + 100; // Offset for better trigger point
+
+      Object.entries(sections).forEach(([key, section]) => {
+        if (section) {
+          const sectionTop = section.offsetTop;
+          const sectionBottom = sectionTop + section.offsetHeight;
+
+          if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
+            setActiveSection(key);
+          }
+        }
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const openVideoModal = () => {
@@ -326,20 +426,39 @@ export default function CATMS() {
     },
   ];
 
+  const scrollToSection = (sectionId) => {
+    const element = document.querySelector(
+      sectionId === "home" ? ".hero-section" : `#${sectionId}`
+    );
+    if (element) {
+      const offset = 80; // Adjust this value based on your header height
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
+    }
+  };
+
   return (
     <TourProvider
       steps={steps}
       styles={{
         popover: (base) => ({
           ...base,
-          "--reactour-accent": "#4f46e5",
-          borderRadius: 12,
+          "--reactour-accent": "#6c5ce7",
+          borderRadius: 16,
           padding: 24,
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+          backdropFilter: "blur(12px)",
+          backgroundColor: "rgba(255, 255, 255, 0.1)",
+          border: "1px solid rgba(255, 255, 255, 0.2)",
         }),
         dot: (base, { current }) => ({
           ...base,
-          background: current ? "#4f46e5" : "#ccc",
+          background: current ? "#6c5ce7" : "#ccc",
           width: current ? 12 : 8,
           height: current ? 12 : 8,
           transition: "all 0.3s ease",
@@ -365,57 +484,215 @@ export default function CATMS() {
       inViewThreshold={100}
       maskClassName="bg-black/50"
       className="helper"
-      accentColor="#4f46e5"
+      accentColor="#6c5ce7"
       position="bottom"
       padding={10}
       maskSpace={10}
       arrowColor="#fff"
     >
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <header className="bg-indigo-700 text-white sticky top-0 z-50">
+      <StartupScreen />
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#2d3436] via-[#6c5ce7] to-[#00b894] relative overflow-hidden">
+        {/* Enhanced plasma background effect */}
+        <div
+          className="fixed inset-0 pointer-events-none"
+          style={{
+            background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, 
+              rgba(108, 92, 231, 0.2) 0%, 
+              rgba(0, 184, 148, 0.1) 50%, 
+              transparent 100%)`,
+            transition: "background 0.1s ease-out",
+          }}
+        />
+
+        <motion.header
+          className={`fixed w-full z-50 transition-all duration-300 ${
+            isScrolled
+              ? "bg-[#2d3436]/90 backdrop-blur-xl border-b border-white/10"
+              : "bg-transparent"
+          }`}
+          initial={{ y: -100 }}
+          animate={{ y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+              <motion.div
+                className="flex items-center space-x-4"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
                 <Link href="/" className="flex items-center">
                   <Image
                     src="/images/lap.png"
-                    alt="AccomoInspect Logo"
-                    width={70}
-                    height={70}
+                    alt="CATMS Logo"
+                    width={50}
+                    height={50}
+                    className="hover:scale-105 transition-transform duration-300"
                   />
                 </Link>
-              </div>
-              <nav className="hidden md:block">
-                <ul className="flex space-x-6">
-                  <li>
-                    <Link href="/" className="hover:underline">
-                      Home
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="#features" className="hover:underline">
-                      Features
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="#process" className="hover:underline">
-                      Process
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="#faq" className="hover:underline">
-                      FAQ
-                    </Link>
-                  </li>
+              </motion.div>
+              <motion.nav
+                className="hidden md:block"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <ul className="flex space-x-8 items-center">
+                  {["home", "features", "process", "faq"].map((section) => (
+                    <li key={section} className="relative">
+                      <button
+                        onClick={() => scrollToSection(section)}
+                        className={`
+                          px-4 
+                          py-2 
+                          text-white 
+                          transition-all
+                          duration-300 
+                          relative 
+                          text-sm
+                          font-medium
+                          uppercase
+                          tracking-wider
+                          ${
+                            !isScrolled && section === "home"
+                              ? "hover:text-black"
+                              : "hover:text-[#4299e1]"
+                          }
+                          ${
+                            activeSection === section
+                              ? !isScrolled && section === "home"
+                                ? "text-black"
+                                : "text-[#4299e1]"
+                              : ""
+                          }
+                        `}
+                      >
+                        <span className="relative z-10">
+                          {section.charAt(0).toUpperCase() + section.slice(1)}
+                        </span>
+                        {activeSection === section && (
+                          <motion.div
+                            layoutId="activeSection"
+                            className={`
+                              absolute 
+                              inset-0 
+                              rounded-full
+                              -z-10
+                              ${
+                                !isScrolled && section === "home"
+                                  ? "bg-gradient-to-r from-white/30 to-white/10"
+                                  : "bg-gradient-to-r from-[#4299e1]/20 to-[#63b3ed]/10"
+                              }
+                            `}
+                            initial={false}
+                            transition={{
+                              type: "spring",
+                              bounce: 0.2,
+                              duration: 0.6,
+                            }}
+                          />
+                        )}
+                        {/* Active indicator dot */}
+                        {activeSection === section && (
+                          <motion.div
+                            layoutId="activeDot"
+                            className={`
+                              absolute 
+                              -bottom-2 
+                              left-1/2 
+                              w-1 
+                              h-1 
+                              rounded-full 
+                              transform 
+                              -translate-x-1/2
+                              ${
+                                !isScrolled && section === "home"
+                                  ? "bg-black"
+                                  : "bg-[#4299e1]"
+                              }
+                            `}
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{
+                              type: "spring",
+                              bounce: 0.2,
+                              duration: 0.6,
+                            }}
+                          />
+                        )}
+                        {/* Hover effect */}
+                        <motion.div
+                          className={`
+                            absolute 
+                            bottom-0 
+                            left-0 
+                            h-[2px] 
+                            w-full 
+                            origin-left
+                            ${
+                              !isScrolled && section === "home"
+                                ? "bg-black"
+                                : "bg-[#4299e1]"
+                            }
+                          `}
+                          initial={{ scaleX: 0 }}
+                          whileHover={{ scaleX: 1 }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      </button>
+                    </li>
+                  ))}
                 </ul>
-              </nav>
+              </motion.nav>
             </div>
           </div>
-        </header>
+        </motion.header>
 
-        <main>
-          <section className="hero-section bg-gradient-to-b from-indigo-800 to-indigo-600 py-20">
-            <div className="container mx-auto px-4">
+        <main className="pt-20">
+          <section className="hero-section relative min-h-screen flex items-center justify-center overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#2d3436]/90 to-[#6c5ce7]/90 backdrop-blur-sm z-0" />
+            <div className="absolute inset-0 z-0">
+              <motion.div
+                className="relative w-full h-full"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                {images.map((src, index) => (
+                  <motion.div
+                    key={src}
+                    className="absolute inset-0"
+                    initial={{
+                      opacity: 0,
+                      scale: 1.1,
+                      filter: "blur(20px)",
+                    }}
+                    animate={{
+                      opacity: index === currentImageIndex ? 1 : 0,
+                      scale: index === currentImageIndex ? 1 : 1.1,
+                      filter:
+                        index === currentImageIndex
+                          ? "blur(0px)"
+                          : "blur(20px)",
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      ease: [0.4, 0, 0.2, 1],
+                    }}
+                  >
+                    <Image
+                      src={src}
+                      alt={`Slide ${index + 1}`}
+                      fill
+                      className="object-cover"
+                      priority={index === 0}
+                    />
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
+            <div className="container mx-auto px-4 relative z-10">
               <div className="flex flex-col md:flex-row items-center">
                 <motion.div
                   className="md:w-1/2 mb-8 md:mb-0"
@@ -423,33 +700,41 @@ export default function CATMS() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <h1 className="text-4xl md:text-5xl font-bold text-sky-100 mb-4">
+                  <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight drop-shadow-lg">
                     Central Aurora Tourism Management System
                   </h1>
-                  <p className="text-xl text-sky-200 mb-6">
+                  <p className="text-xl text-white/90 mb-8 drop-shadow-md">
                     CATMS: Your all-in-one solution for efficient, transparent,
-                    and standardized accommodation inspections. Empower your
-                    team to maintain world-class standards and enhance guest
-                    satisfaction.
+                    and standardized accommodation inspections.
                   </p>
                   <div className="cta-buttons flex flex-col sm:flex-row gap-4">
-                    <Button
-                      size="lg"
-                      variant="secondary"
-                      className="bg-amber-400 text-indigo-900 hover:bg-amber-300"
-                      onClick={openVideoModal}
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                     >
-                      Watch Demo
-                    </Button>
-                    <Link href="/login">
                       <Button
                         size="lg"
                         variant="secondary"
-                        className="bg-amber-400 text-indigo-900 hover:bg-amber-300"
+                        className="bg-[#ffd700] text-[#0056b3] hover:bg-[#ffc107] shadow-lg"
+                        onClick={openVideoModal}
                       >
-                        Sign Up
+                        Watch Demo
                       </Button>
-                    </Link>
+                    </motion.div>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Link href="/login">
+                        <Button
+                          size="lg"
+                          variant="secondary"
+                          className="bg-[#ffd700] text-[#0056b3] hover:bg-[#ffc107] shadow-lg"
+                        >
+                          Sign Up
+                        </Button>
+                      </Link>
+                    </motion.div>
                   </div>
                 </motion.div>
                 <motion.div
@@ -458,58 +743,99 @@ export default function CATMS() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  <div className="relative w-full h-[400px]">
+                  <div className="relative w-full h-[400px] rounded-xl overflow-hidden shadow-2xl">
                     {images.map((src, index) => (
-                      <Image
+                      <motion.div
                         key={src}
-                        src={src}
-                        alt={`Slide ${index + 1}`}
-                        fill
-                        className={`rounded-lg shadow-lg object-cover transition-opacity duration-1000 ${
-                          index === currentImageIndex
-                            ? "opacity-100"
-                            : "opacity-0"
-                        }`}
-                        priority={index === 0}
-                      />
+                        className="absolute inset-0"
+                        initial={{
+                          opacity: 0,
+                          scale: 1.1,
+                          filter: "blur(10px)",
+                        }}
+                        animate={{
+                          opacity: index === currentImageIndex ? 1 : 0,
+                          scale: index === currentImageIndex ? 1 : 1.1,
+                          filter:
+                            index === currentImageIndex
+                              ? "blur(0px)"
+                              : "blur(10px)",
+                        }}
+                        transition={{
+                          duration: 1,
+                          ease: [0.4, 0, 0.2, 1],
+                        }}
+                      >
+                        <Image
+                          src={src}
+                          alt={`Slide ${index + 1}`}
+                          fill
+                          className="object-cover rounded-xl"
+                          priority={index === 0}
+                        />
+                      </motion.div>
                     ))}
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                    />
                   </div>
                 </motion.div>
               </div>
             </div>
           </section>
 
-          <section id="features" className="py-20 bg-white">
-            <div className="container mx-auto px-4">
-              <h2 className="text-3xl font-bold text-center mb-12 text-teal-800">
-                Why Choose CATMS?
-              </h2>
+          <section id="features" className="py-20 relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#00b894]/10 to-[#6c5ce7]/10 backdrop-blur-xl" />
+            <div className="container mx-auto px-4 relative z-10">
+              <motion.h2
+                className="text-6xl font-black text-center mb-12 text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)] relative"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true }}
+              >
+                <span className="relative z-10">Why Choose CATMS?</span>
+                <span className="absolute -z-10 inset-0 bg-gradient-to-r from-[#00b894]/20 to-[#6c5ce7]/20 blur-2xl"></span>
+              </motion.h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {features.map((feature, index) => (
-                  <Card
+                  <motion.div
                     key={index}
-                    className="hover:shadow-lg transition-shadow duration-300"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    whileHover={{ scale: 1.02, y: -5 }}
                   >
-                    <CardContent className="p-6">
-                      <feature.icon
-                        size={40}
-                        className="text-indigo-600 mb-4"
-                      />
-                      <h3 className="text-xl font-semibold mb-2 text-indigo-800">
-                        {feature.title}
-                      </h3>
-                      <p className="text-gray-600">{feature.description}</p>
-                    </CardContent>
-                  </Card>
+                    <Card className="bg-white/20 backdrop-blur-xl border border-white/30 hover:border-[#00b894]/50 transition-all duration-300 group">
+                      <CardContent className="p-6">
+                        <feature.icon
+                          size={40}
+                          className="text-[#00b894] mb-4 drop-shadow-lg group-hover:text-[#6c5ce7] transition-colors duration-300"
+                        />
+                        <h3 className="text-xl font-semibold mb-2 text-white group-hover:text-[#00b894] transition-colors duration-300">
+                          {feature.title}
+                        </h3>
+                        <p className="text-white/90">{feature.description}</p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 ))}
               </div>
             </div>
           </section>
 
-          <section id="process" className="py-20 bg-gray-50">
-            <div className="container mx-auto px-4">
-              <h2 className="text-3xl font-bold text-center mb-12 text-teal-800">
-                Streamlined Inspection Process
+          <section id="process" className="py-20 relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#6c5ce7]/10 to-[#2d3436]/10 backdrop-blur-xl" />
+            <div className="container mx-auto px-4 relative z-10">
+              <h2 className="text-6xl font-black text-center mb-12 text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)] relative">
+                <span className="relative z-10">
+                  Streamlined Inspection Process
+                </span>
+                <span className="absolute -z-10 inset-0 bg-gradient-to-r from-[#6c5ce7]/20 to-[#2d3436]/20 blur-2xl"></span>
               </h2>
               <Tabs defaultValue="pre-inspection" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 mb-8">
@@ -560,10 +886,14 @@ export default function CATMS() {
             </div>
           </section>
 
-          <section className="py-20 bg-white">
-            <div className="container mx-auto px-4">
-              <h2 className="text-3xl font-bold text-center mb-12 text-teal-800">
-                Empowering Your Accommodation Business
+          <section className="py-20 relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#00b894]/10 to-[#2d3436]/10 backdrop-blur-xl" />
+            <div className="container mx-auto px-4 relative z-10">
+              <h2 className="text-6xl font-black text-center mb-12 text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)] relative">
+                <span className="relative z-10">
+                  Empowering Your Accommodation Business
+                </span>
+                <span className="absolute -z-10 inset-0 bg-gradient-to-r from-[#00b894]/20 to-[#2d3436]/20 blur-2xl"></span>
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <Card>
@@ -613,26 +943,33 @@ export default function CATMS() {
             </div>
           </section>
 
-          <section id="faq" className="py-20 bg-gray-50">
-            <div className="container mx-auto px-4">
-              <h2 className="text-3xl font-bold text-center mb-12 text-teal-800">
-                Frequently Asked Questions
+          <section id="faq" className="py-20 relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#6c5ce7]/10 to-[#00b894]/10 backdrop-blur-xl" />
+            <div className="container mx-auto px-4 relative z-10">
+              <h2 className="text-6xl font-black text-center mb-12 text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)] relative">
+                <span className="relative z-10">
+                  Frequently Asked Questions
+                </span>
+                <span className="absolute -z-10 inset-0 bg-gradient-to-r from-[#6c5ce7]/20 to-[#00b894]/20 blur-2xl"></span>
               </h2>
               <div className="space-y-4 w-full max-w-3xl mx-auto">
                 {faqItems.map((item, index) => (
-                  <Card key={index} className="overflow-hidden">
+                  <Card
+                    key={index}
+                    className="overflow-hidden bg-white/20 backdrop-blur-xl border border-white/30 hover:border-[#00b894]/50 transition-all duration-300"
+                  >
                     <CardContent className="p-0">
                       <button
-                        className="flex justify-between items-center w-full p-4 text-left focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        className="flex justify-between items-center w-full p-4 text-left focus:outline-none focus:ring-2 focus:ring-[#00b894]/50 hover:bg-white/10 transition-colors duration-300"
                         onClick={() => toggleFAQ(index)}
                       >
-                        <span className="text-lg font-semibold text-teal-700">
+                        <span className="text-lg font-semibold text-white group-hover:text-[#00b894]">
                           {item.question}
                         </span>
                         {expandedFAQ === index ? (
-                          <ChevronUp className="h-5 w-5 text-teal-500" />
+                          <ChevronUp className="h-5 w-5 text-[#00b894]" />
                         ) : (
-                          <ChevronDown className="h-5 w-5 text-teal-500" />
+                          <ChevronDown className="h-5 w-5 text-[#00b894]" />
                         )}
                       </button>
                       <AnimatePresence>
@@ -644,7 +981,7 @@ export default function CATMS() {
                             transition={{ duration: 0.3 }}
                             className="px-4 pb-4"
                           >
-                            <div className="text-gray-600">{item.answer}</div>
+                            <div className="text-white/90">{item.answer}</div>
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -656,19 +993,22 @@ export default function CATMS() {
           </section>
         </main>
 
-        <footer className="bg-gray-800 text-white py-12">
-          <div className="container mx-auto px-4">
+        <footer className="bg-[#2d3436]/90 backdrop-blur-xl text-white py-12 relative border-t border-white/10">
+          <div className="container mx-auto px-4 relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true }}
+              >
                 <h3 className="text-lg font-semibold mb-4">
                   About Central Aurora Tourism Management System
                 </h3>
-                <p className="text-sm">
+                <p className="text-sm text-gray-300">
                   CATMS is the leading accommodation inspection management
                   system, streamlining quality control processes for hotels,
-                  resorts, and vacation rentals worldwide. Our mission is to
-                  elevate hospitality standards and enhance guest experiences
-                  through efficient, data-driven inspections.
+                  resorts, and vacation rentals worldwide.
                 </p>
                 <div className="flex space-x-4 mt-4">
                   <Image
@@ -676,24 +1016,24 @@ export default function CATMS() {
                     alt="DOT"
                     width={80}
                     height={80}
-                    className="object-contain"
+                    className="object-contain hover:scale-105 transition-transform duration-300"
                   />
                   <Image
                     src="/images/lap.png"
                     alt="AURORA"
                     width={80}
                     height={80}
-                    className="object-contain"
+                    className="object-contain hover:scale-105 transition-transform duration-300"
                   />
                   <Image
-                    src="/images/bgaurora.png"
-                    alt="TOURISM"
-                    width={80}
-                    height={80}
-                    className="object-contain"
+                    src="/images/love philippines.png"
+                    alt="LOVE PHIL  IPPINES"
+                    width={200}
+                    height={200}
+                    className="object-contain hover:scale-105 transition-transform duration-300"
                   />
                 </div>
-              </div>
+              </motion.div>
               <div>
                 <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
                 <ul className="space-y-2">
@@ -762,15 +1102,23 @@ export default function CATMS() {
         </footer>
 
         {isVideoModalOpen && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          <motion.div
+            className="fixed inset-0 bg-black/90 backdrop-blur-xl z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 closeVideoModal();
               }
             }}
           >
-            <div className="relative w-full max-w-4xl bg-white rounded-lg shadow-lg">
+            <motion.div
+              className="relative w-full max-w-4xl bg-white/20 backdrop-blur-xl rounded-lg shadow-lg border border-white/30"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+            >
               <div className="aspect-video">
                 <video
                   src="/videos/demo.mp4"
@@ -781,8 +1129,8 @@ export default function CATMS() {
                   Your browser does not support the video tag.
                 </video>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
       </div>
       <TourContent />
