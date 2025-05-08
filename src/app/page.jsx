@@ -491,23 +491,44 @@ export default function CATMS() {
       arrowColor="#fff"
     >
       <StartupScreen />
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#2d3436] via-[#6c5ce7] to-[#00b894] relative overflow-hidden">
-        {/* Enhanced plasma background effect */}
+      <div className="min-h-screen flex flex-col bg-[#2D2A59] relative overflow-hidden">
+        {/* Enhanced dramatic background effect */}
         <div
           className="fixed inset-0 pointer-events-none"
           style={{
             background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, 
-              rgba(108, 92, 231, 0.2) 0%, 
-              rgba(0, 184, 148, 0.1) 50%, 
+              rgba(255, 122, 89, 0.2) 0%, 
+              rgba(73, 63, 141, 0.1) 50%, 
               transparent 100%)`,
             transition: "background 0.1s ease-out",
           }}
         />
 
+        {/* Vertical text elements */}
+        <div className="fixed left-6 top-1/2 -translate-y-1/2 z-10 hidden lg:block">
+          <div className="flex flex-col items-center">
+            <div className="transform -rotate-90 origin-center whitespace-nowrap">
+              <span className="text-white/70 tracking-widest uppercase text-sm font-light mb-24 block">
+                AURORA PROVINCE
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="fixed right-6 top-1/2 -translate-y-1/2 z-10 hidden lg:block">
+          <div className="flex flex-col items-center">
+            <div className="transform -rotate-90 origin-center whitespace-nowrap">
+              <span className="text-white/70 tracking-widest uppercase text-sm font-light mb-24 block">
+                TOURISM MANAGEMENT
+              </span>
+            </div>
+          </div>
+        </div>
+
         <motion.header
           className={`fixed w-full z-50 transition-all duration-300 ${
             isScrolled
-              ? "bg-[#2d3436]/90 backdrop-blur-xl border-b border-white/10"
+              ? "bg-[#2D2A59]/90 backdrop-blur-xl border-b border-white/10"
               : "bg-transparent"
           }`}
           initial={{ y: -100 }}
@@ -554,18 +575,8 @@ export default function CATMS() {
                           font-medium
                           uppercase
                           tracking-wider
-                          ${
-                            !isScrolled && section === "home"
-                              ? "hover:text-black"
-                              : "hover:text-[#4299e1]"
-                          }
-                          ${
-                            activeSection === section
-                              ? !isScrolled && section === "home"
-                                ? "text-black"
-                                : "text-[#4299e1]"
-                              : ""
-                          }
+                          hover:text-[#FF7A59]
+                          ${activeSection === section ? "text-[#FF7A59]" : ""}
                         `}
                       >
                         <span className="relative z-10">
@@ -574,17 +585,7 @@ export default function CATMS() {
                         {activeSection === section && (
                           <motion.div
                             layoutId="activeSection"
-                            className={`
-                              absolute 
-                              inset-0 
-                              rounded-full
-                              -z-10
-                              ${
-                                !isScrolled && section === "home"
-                                  ? "bg-gradient-to-r from-white/30 to-white/10"
-                                  : "bg-gradient-to-r from-[#4299e1]/20 to-[#63b3ed]/10"
-                              }
-                            `}
+                            className="absolute inset-0 rounded-full -z-10 bg-white/10"
                             initial={false}
                             transition={{
                               type: "spring",
@@ -597,21 +598,7 @@ export default function CATMS() {
                         {activeSection === section && (
                           <motion.div
                             layoutId="activeDot"
-                            className={`
-                              absolute 
-                              -bottom-2 
-                              left-1/2 
-                              w-1 
-                              h-1 
-                              rounded-full 
-                              transform 
-                              -translate-x-1/2
-                              ${
-                                !isScrolled && section === "home"
-                                  ? "bg-black"
-                                  : "bg-[#4299e1]"
-                              }
-                            `}
+                            className="absolute -bottom-2 left-1/2 w-1 h-1 rounded-full transform -translate-x-1/2 bg-[#FF7A59]"
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             transition={{
@@ -623,19 +610,7 @@ export default function CATMS() {
                         )}
                         {/* Hover effect */}
                         <motion.div
-                          className={`
-                            absolute 
-                            bottom-0 
-                            left-0 
-                            h-[2px] 
-                            w-full 
-                            origin-left
-                            ${
-                              !isScrolled && section === "home"
-                                ? "bg-black"
-                                : "bg-[#4299e1]"
-                            }
-                          `}
+                          className="absolute bottom-0 left-0 h-[2px] w-full origin-left bg-[#FF7A59]"
                           initial={{ scaleX: 0 }}
                           whileHover={{ scaleX: 1 }}
                           transition={{ duration: 0.3 }}
@@ -651,156 +626,89 @@ export default function CATMS() {
 
         <main className="pt-20">
           <section className="hero-section relative min-h-screen flex items-center justify-center overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#2d3436]/90 to-[#6c5ce7]/90 backdrop-blur-sm z-0" />
-            <div className="absolute inset-0 z-0">
-              <motion.div
-                className="relative w-full h-full"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
-              >
-                {images.map((src, index) => (
-                  <motion.div
-                    key={src}
-                    className="absolute inset-0"
-                    initial={{
-                      opacity: 0,
-                      scale: 1.1,
-                      filter: "blur(20px)",
-                    }}
-                    animate={{
-                      opacity: index === currentImageIndex ? 1 : 0,
-                      scale: index === currentImageIndex ? 1 : 1.1,
-                      filter:
-                        index === currentImageIndex
-                          ? "blur(0px)"
-                          : "blur(20px)",
-                    }}
-                    transition={{
-                      duration: 1.5,
-                      ease: [0.4, 0, 0.2, 1],
-                    }}
-                  >
-                    <Image
-                      src={src}
-                      alt={`Slide ${index + 1}`}
-                      fill
-                      className="object-cover"
-                      priority={index === 0}
-                    />
-                  </motion.div>
-                ))}
-              </motion.div>
+            {/* Main background */}
+            <div className="absolute inset-0 bg-[#2B2155] z-0" />
+            
+            {/* 3D Geometric elements */}
+            <div className="absolute inset-0 z-1">
+              {/* Large pink/purple triangular mountain shapes */}
+              <div className="absolute top-0 right-0 w-2/3 h-full">
+                <svg viewBox="0 0 800 600" className="w-full h-full" preserveAspectRatio="xMinYMin slice">
+                  <path d="M500,0 L800,0 L800,500 L500,200 Z" fill="#B65B9C" opacity="0.6" />
+                  <path d="M400,600 L800,600 L600,200 L200,500 Z" fill="#A85B9C" opacity="0.7" />
+                  <path d="M700,300 L800,100 L800,400 Z" fill="#C75B9C" opacity="0.8" />
+                </svg>
+              </div>
+              
+              {/* Small geometric accents */}
+              <div className="absolute top-20 left-20 w-4 h-4 rounded-full bg-white opacity-20"></div>
+              <div className="absolute top-40 left-40 w-2 h-2 rounded-full bg-white opacity-15"></div>
+              <div className="absolute bottom-1/4 left-1/3 w-3 h-3 rounded-full bg-white opacity-10"></div>
             </div>
-            <div className="container mx-auto px-4 relative z-10">
+            
+            {/* Main Content */}
+            <div className="container mx-auto px-4 z-10 relative">
               <div className="flex flex-col md:flex-row items-center">
-                <motion.div
-                  className="md:w-1/2 mb-8 md:mb-0"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight drop-shadow-lg">
-                    Central Aurora Tourism Management System
-                  </h1>
-                  <p className="text-xl text-white/90 mb-8 drop-shadow-md">
-                    CATMS: Your all-in-one solution for efficient, transparent,
-                    and standardized accommodation inspections.
+                <div className="md:w-1/2 mb-8 md:mb-0">
+                  <div className="relative">
+                    <h1 className="text-8xl md:text-9xl font-black text-white mb-4 leading-tight tracking-tighter">
+                      CATMS<span className="text-[#FF7A59] absolute text-4xl">*</span>
+                    </h1>
+                  </div>
+                  <p className="text-xl text-white/90 mb-8">
+                    Join us for an epic week of hiking, team-building, and digital detoxing. This system 
+                    brings your property to life.
                   </p>
-                  <div className="cta-buttons flex flex-col sm:flex-row gap-4">
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                  <div className="cta-buttons">
+                    <Button
+                      className="bg-[#FF7A59] text-white hover:bg-[#E55A3A] shadow-lg px-8 py-3 rounded-full"
+                      onClick={openVideoModal}
                     >
-                      <Button
-                        size="lg"
-                        variant="secondary"
-                        className="bg-[#ffd700] text-[#0056b3] hover:bg-[#ffc107] shadow-lg"
-                        onClick={openVideoModal}
-                      >
-                        Watch Demo
-                      </Button>
-                    </motion.div>
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Link href="/login">
-                        <Button
-                          size="lg"
-                          variant="secondary"
-                          className="bg-[#ffd700] text-[#0056b3] hover:bg-[#ffc107] shadow-lg"
-                        >
-                          Sign Up
-                        </Button>
-                      </Link>
-                    </motion.div>
+                      Adventure →
+                    </Button>
                   </div>
-                </motion.div>
-                <motion.div
-                  className="md:w-1/2"
-                  initial={{ opacity: 0, x: 50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                >
-                  <div className="relative w-full h-[400px] rounded-xl overflow-hidden shadow-2xl">
-                    {images.map((src, index) => (
-                      <motion.div
-                        key={src}
-                        className="absolute inset-0"
-                        initial={{
-                          opacity: 0,
-                          scale: 1.1,
-                          filter: "blur(10px)",
-                        }}
-                        animate={{
-                          opacity: index === currentImageIndex ? 1 : 0,
-                          scale: index === currentImageIndex ? 1 : 1.1,
-                          filter:
-                            index === currentImageIndex
-                              ? "blur(0px)"
-                              : "blur(10px)",
-                        }}
-                        transition={{
-                          duration: 1,
-                          ease: [0.4, 0, 0.2, 1],
-                        }}
-                      >
-                        <Image
-                          src={src}
-                          alt={`Slide ${index + 1}`}
-                          fill
-                          className="object-cover rounded-xl"
-                          priority={index === 0}
-                        />
-                      </motion.div>
-                    ))}
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5 }}
-                    />
-                  </div>
-                </motion.div>
+                </div>
+                <div className="md:w-1/2 relative">
+                  {/* This space intentionally left empty to showcase the geometric background */}
+                </div>
+              </div>
+            </div>
+            
+            {/* Bottom navigation/indicators */}
+            <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex space-x-16 text-white/70">
+              <div className="text-center">
+                <span className="text-xs uppercase">LOCATION</span>
+              </div>
+              <div className="text-center">
+                <span className="text-xs uppercase">ITINERARY</span>
+              </div>
+              <div className="text-center">
+                <span className="text-xs uppercase">SCHEDULE</span>
+              </div>
+              <div className="text-center">
+                <span className="text-xs uppercase">AVAILABILITY</span>
+              </div>
+              <div className="text-center">
+                <Button className="bg-[#9D4F9A]/30 backdrop-blur-sm text-white hover:bg-[#9D4F9A]/50 px-6 py-1 rounded-sm">
+                  Login
+                </Button>
               </div>
             </div>
           </section>
 
           <section id="features" className="py-20 relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#00b894]/10 to-[#6c5ce7]/10 backdrop-blur-xl" />
+            <div className="absolute inset-0 bg-[#2D2A59] backdrop-blur-xl" />
             <div className="container mx-auto px-4 relative z-10">
-              <motion.h2
-                className="text-6xl font-black text-center mb-12 text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)] relative"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <span className="relative z-10">Why Choose CATMS?</span>
-                <span className="absolute -z-10 inset-0 bg-gradient-to-r from-[#00b894]/20 to-[#6c5ce7]/20 blur-2xl"></span>
-              </motion.h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="flex items-center mb-12">
+                <div className="w-16 h-0.5 bg-[#FF7A59] mr-4"></div>
+                <h2 className="text-4xl font-bold text-white">
+                  Choose your Adventure
+                </h2>
+                <div className="flex-grow h-0.5 bg-white/10 ml-4"></div>
+                <div className="text-[#FF7A59] font-mono ml-4">01 / Range of Activities</div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {features.map((feature, index) => (
                   <motion.div
                     key={index}
@@ -810,16 +718,26 @@ export default function CATMS() {
                     viewport={{ once: true }}
                     whileHover={{ scale: 1.02, y: -5 }}
                   >
-                    <Card className="bg-white/20 backdrop-blur-xl border border-white/30 hover:border-[#00b894]/50 transition-all duration-300 group">
+                    <Card className="bg-[#332E70] border-none overflow-hidden transition-all duration-300 group">
                       <CardContent className="p-6">
-                        <feature.icon
-                          size={40}
-                          className="text-[#00b894] mb-4 drop-shadow-lg group-hover:text-[#6c5ce7] transition-colors duration-300"
-                        />
-                        <h3 className="text-xl font-semibold mb-2 text-white group-hover:text-[#00b894] transition-colors duration-300">
+                        <div className="text-[#FF7A59] text-3xl font-black mb-6">
+                          0{index + 1}
+                        </div>
+                        <div className="bg-[#2D2A59] p-4 rounded-lg mb-6 inline-block">
+                          <feature.icon
+                            size={32}
+                            className="text-[#FF7A59]"
+                          />
+                        </div>
+                        <h3 className="text-2xl font-bold mb-3 text-white">
                           {feature.title}
                         </h3>
-                        <p className="text-white/90">{feature.description}</p>
+                        <p className="text-white/70 text-sm">{feature.description}</p>
+                        <Button
+                          className="mt-6 bg-[#FF7A59] text-white hover:bg-[#E55A3A] rounded-full"
+                        >
+                          Explore
+                        </Button>
                       </CardContent>
                     </Card>
                   </motion.div>
@@ -829,147 +747,139 @@ export default function CATMS() {
           </section>
 
           <section id="process" className="py-20 relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#6c5ce7]/10 to-[#2d3436]/10 backdrop-blur-xl" />
+            <div className="absolute inset-0 bg-[#2D2A59] backdrop-blur-xl" />
             <div className="container mx-auto px-4 relative z-10">
-              <h2 className="text-6xl font-black text-center mb-12 text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)] relative">
-                <span className="relative z-10">
-                  Streamlined Inspection Process
-                </span>
-                <span className="absolute -z-10 inset-0 bg-gradient-to-r from-[#6c5ce7]/20 to-[#2d3436]/20 blur-2xl"></span>
-              </h2>
-              <Tabs defaultValue="pre-inspection" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 mb-8">
-                  {inspectionSteps.map((step, index) => (
-                    <TabsTrigger
-                      key={index}
-                      value={step.title.toLowerCase().replace(" ", "-")}
-                      className="text-indigo-600 data-[state=active]:bg-indigo-100"
-                    >
-                      {step.title}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
+              <div className="flex items-center mb-12">
+                <div className="w-16 h-0.5 bg-[#FF7A59] mr-4"></div>
+                <h2 className="text-4xl font-bold text-white">
+                  Inspection Process
+                </h2>
+                <div className="flex-grow h-0.5 bg-white/10 ml-4"></div>
+                <div className="text-[#FF7A59] font-mono ml-4">02 / How It Works</div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {inspectionSteps.map((step, index) => (
-                  <TabsContent
+                  <motion.div
                     key={index}
-                    value={step.title.toLowerCase().replace(" ", "-")}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    whileHover={{ scale: 1.02, y: -5 }}
                   >
-                    <Card className="border-teal-200">
-                      <CardContent className="p-6">
-                        <div className="flex items-center mb-4">
-                          <step.icon size={24} className="text-teal-600 mr-4" />
-                          <h3 className="text-2xl font-bold text-teal-800">
-                            {step.title}
-                          </h3>
+                    <Card className="bg-[#332E70] border-none overflow-hidden transition-all duration-300 group h-full">
+                      <CardContent className="p-6 h-full flex flex-col">
+                        <div className="text-[#FF7A59] text-3xl font-black mb-6">
+                          0{index + 1}
                         </div>
-                        <p className="text-gray-600 mb-4">{step.description}</p>
-                        <div className="aspect-video bg-teal-50 rounded-lg overflow-hidden">
-                          {step.videoUrl ? (
-                            <video
-                              src={step.videoUrl}
-                              controls
-                              className="w-full h-full object-cover"
-                            >
-                              Your browser does not support the video tag.
-                            </video>
-                          ) : (
-                            <p className="flex items-center justify-center h-full text-teal-500">
-                              Video coming soon
-                            </p>
-                          )}
+                        <div className="bg-[#2D2A59] p-4 rounded-lg mb-6 inline-block">
+                          <step.icon
+                            size={32}
+                            className="text-[#FF7A59]"
+                          />
                         </div>
+                        <h3 className="text-2xl font-bold mb-3 text-white">
+                          {step.title}
+                        </h3>
+                        <p className="text-white/70 text-sm flex-grow">{step.description}</p>
+                        <Button
+                          className="mt-6 bg-[#FF7A59] text-white hover:bg-[#E55A3A] rounded-full"
+                        >
+                          Explore
+                        </Button>
                       </CardContent>
                     </Card>
-                  </TabsContent>
+                  </motion.div>
                 ))}
-              </Tabs>
+              </div>
             </div>
           </section>
 
-          <section className="py-20 relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#00b894]/10 to-[#2d3436]/10 backdrop-blur-xl" />
+          <section id="gallery" className="py-20 relative">
+            <div className="absolute inset-0 bg-[#2D2A59] backdrop-blur-xl" />
             <div className="container mx-auto px-4 relative z-10">
-              <h2 className="text-6xl font-black text-center mb-12 text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)] relative">
-                <span className="relative z-10">
-                  Empowering Your Accommodation Business
-                </span>
-                <span className="absolute -z-10 inset-0 bg-gradient-to-r from-[#00b894]/20 to-[#2d3436]/20 blur-2xl"></span>
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <Card>
-                  <CardContent className="p-6 text-center">
-                    <FileText
-                      size={48}
-                      className="text-teal-600 mx-auto mb-4"
-                    />
-                    <h3 className="text-xl font-semibold mb-2 text-teal-800">
-                      For Inspectors
-                    </h3>
-                    <p className="text-gray-600">
-                      Streamline your workflow, access real-time data, and
-                      conduct more efficient room-by-room inspections.
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-6 text-center">
-                    <Building
-                      size={48}
-                      className="text-teal-600 mx-auto mb-4"
-                    />
-                    <h3 className="text-xl font-semibold mb-2 text-teal-800">
-                      For Property Managers
-                    </h3>
-                    <p className="text-gray-600">
-                      Maintain high standards, track performance, and improve
-                      guest satisfaction with data-driven insights.
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-6 text-center">
-                    <Zap size={48} className="text-teal-600 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2 text-teal-800">
-                      Administrator of Provincial Tourism Office
-                    </h3>
-                    <p className="text-gray-600">
-                      Gain comprehensive insights, ensure brand consistency, and
-                      drive continuous improvement across your properties using
-                      our web-based system.
-                    </p>
-                  </CardContent>
-                </Card>
+              <div className="flex items-center mb-12">
+                <div className="w-16 h-0.5 bg-[#FF7A59] mr-4"></div>
+                <h2 className="text-4xl font-bold text-white">
+                  Browse our Gallery
+                </h2>
+                <div className="flex-grow h-0.5 bg-white/10 ml-4"></div>
+                <div className="text-[#FF7A59] font-mono ml-4">03 / Visual Showcase</div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="relative rounded-xl overflow-hidden h-[500px]">
+                  <Image
+                    src="/images/caption.png"
+                    alt="Gallery image"
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#2D2A59] to-transparent"></div>
+                  <div className="absolute bottom-0 left-0 p-8">
+                    <h3 className="text-3xl font-bold text-white mb-2">Baler Solitude</h3>
+                    <p className="text-white/70">2023</p>
+                    <Button className="mt-4 bg-[#FF7A59] text-white hover:bg-[#E55A3A] rounded-full">
+                      Explore Photo
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="bg-[#332E70] rounded-xl p-8">
+                  <div className="grid grid-cols-2 gap-4 h-full">
+                    <div>
+                      <h4 className="text-xl font-bold text-white mb-4">Photographer</h4>
+                      <p className="text-white/70 text-sm">The DOT tourism team has taken detailed shots of many destinations across Aurora province.</p>
+                      
+                      <h4 className="text-xl font-bold text-white mb-4 mt-8">Year</h4>
+                      <p className="text-white/70 text-sm">2023</p>
+                      
+                      <h4 className="text-xl font-bold text-white mb-4 mt-8">Description</h4>
+                      <p className="text-white/70 text-sm">An inspiring hotel inspection system based on natural elements and clean design.</p>
+                    </div>
+                    
+                    <div className="flex items-end">
+                      <Button className="w-full bg-[#FF7A59] text-white hover:bg-[#E55A3A] rounded-full h-12">
+                        View Full Gallery
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
 
           <section id="faq" className="py-20 relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#6c5ce7]/10 to-[#00b894]/10 backdrop-blur-xl" />
+            <div className="absolute inset-0 bg-[#2D2A59] backdrop-blur-xl" />
             <div className="container mx-auto px-4 relative z-10">
-              <h2 className="text-6xl font-black text-center mb-12 text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)] relative">
-                <span className="relative z-10">
+              <div className="flex items-center mb-12">
+                <div className="w-16 h-0.5 bg-[#FF7A59] mr-4"></div>
+                <h2 className="text-4xl font-bold text-white">
                   Frequently Asked Questions
-                </span>
-                <span className="absolute -z-10 inset-0 bg-gradient-to-r from-[#6c5ce7]/20 to-[#00b894]/20 blur-2xl"></span>
-              </h2>
+                </h2>
+                <div className="flex-grow h-0.5 bg-white/10 ml-4"></div>
+                <div className="text-[#FF7A59] font-mono ml-4">04 / Help Center</div>
+              </div>
+              
               <div className="space-y-4 w-full max-w-3xl mx-auto">
                 {faqItems.map((item, index) => (
                   <Card
                     key={index}
-                    className="overflow-hidden bg-white/20 backdrop-blur-xl border border-white/30 hover:border-[#00b894]/50 transition-all duration-300"
+                    className="overflow-hidden bg-[#332E70] border-none hover:border-[#FF7A59]/50 transition-all duration-300"
                   >
                     <CardContent className="p-0">
                       <button
-                        className="flex justify-between items-center w-full p-4 text-left focus:outline-none focus:ring-2 focus:ring-[#00b894]/50 hover:bg-white/10 transition-colors duration-300"
+                        className="flex justify-between items-center w-full p-4 text-left focus:outline-none focus:ring-2 focus:ring-[#FF7A59]/50 hover:bg-[#3D3884] transition-colors duration-300"
                         onClick={() => toggleFAQ(index)}
                       >
-                        <span className="text-lg font-semibold text-white group-hover:text-[#00b894]">
+                        <span className="text-lg font-semibold text-white group-hover:text-[#FF7A59]">
                           {item.question}
                         </span>
                         {expandedFAQ === index ? (
-                          <ChevronUp className="h-5 w-5 text-[#00b894]" />
+                          <ChevronUp className="h-5 w-5 text-[#FF7A59]" />
                         ) : (
-                          <ChevronDown className="h-5 w-5 text-[#00b894]" />
+                          <ChevronDown className="h-5 w-5 text-[#FF7A59]" />
                         )}
                       </button>
                       <AnimatePresence>
@@ -981,7 +891,7 @@ export default function CATMS() {
                             transition={{ duration: 0.3 }}
                             className="px-4 pb-4"
                           >
-                            <div className="text-white/90">{item.answer}</div>
+                            <div className="text-white/70">{item.answer}</div>
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -993,7 +903,7 @@ export default function CATMS() {
           </section>
         </main>
 
-        <footer className="bg-[#2d3436]/90 backdrop-blur-xl text-white py-12 relative border-t border-white/10">
+        <footer className="bg-[#241F4B] text-white py-12 relative border-t border-white/10">
           <div className="container mx-auto px-4 relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <motion.div
@@ -1027,7 +937,7 @@ export default function CATMS() {
                   />
                   <Image
                     src="/images/love philippines.png"
-                    alt="LOVE PHIL  IPPINES"
+                    alt="LOVE PHILIPPINES"
                     width={200}
                     height={200}
                     className="object-contain hover:scale-105 transition-transform duration-300"
