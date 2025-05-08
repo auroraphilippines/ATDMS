@@ -36,6 +36,7 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.54.2",
     "react-hot-toast": "^2.5.1",
+    "react-icons": "^5.5.0",
     "react-joyride": "^2.9.3",
     "react-toastify": "^11.0.3",
     "reactour": "^1.19.4",
