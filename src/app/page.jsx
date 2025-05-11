@@ -1,641 +1,555 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  ClipboardCheck,
-  ShieldCheck,
-  Users,
-  Award,
-  ClipboardList,
-  Search,
-  BarChart2,
   FileText,
-  Building,
-  Zap,
+  ExternalLink,
+  Clock,
+  AlertCircle,
+  Construction,
 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-import { Toaster } from "@/components/ui/toaster";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 
-const images = [
-  "/images/bay.png",
-  "/images/costa.png",
-  "/images/resort.jpg",
-  "/images/casa.png",
-  "/images/baler.png",
-  "/images/l-sirene-boutique-resort.png",
-  "/images/playa-azul-baler.png",
-  "/images/Riverstone.png",
-  "/images/m.png",
-  "/images/caption.png",
-];
-
-export default function CATMS() {
-  const { toast } = useToast();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [expandedFAQ, setExpandedFAQ] = useState(null);
-  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+// Startup screen component - using the same design from the original CATMS
+function StartupScreen({ onComplete }) {
+  const [loadingText, setLoadingText] = useState("System status check...");
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 5000);
+    // Text animation sequence
+    const textSequence = [
+      { text: "System status check...", time: 0 },
+      { text: "Checking availability...", time: 1000 },
+      { text: "System currently offline...", time: 2000 },
+      { text: "Preparing status report...", time: 3000 },
+    ];
 
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    toast({
-      title: "Preview Mode",
-      description:
-        "This is a preview version of CATMS. Some features may be limited.",
-      duration: null,
-      className: "bg-amber-100 border-amber-400",
+    textSequence.forEach((item) => {
+      setTimeout(() => {
+        setLoadingText(item.text);
+      }, item.time);
     });
-  }, [toast]);
 
-  const openVideoModal = () => {
-    setIsVideoModalOpen(true);
-  };
+    // Progress animation
+    const progressInterval = setInterval(() => {
+      setLoadingProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          setTimeout(() => {
+            onComplete();
+          }, 500);
+          return 100;
+        }
+        return prev + 5;
+      });
+    }, 150);
 
-  const closeVideoModal = () => {
-    setIsVideoModalOpen(false);
-  };
-
-  const toggleFAQ = (index) => {
-    if (expandedFAQ === index) {
-      setExpandedFAQ(null);
-    } else {
-      setExpandedFAQ(index);
-    }
-  };
-
-  const features = [
-    {
-      icon: ClipboardCheck,
-      title: "Streamlined Inspections",
-      description:
-        "Reduce inspection time by 60% with our digital checklists. Ensure thorough room-by-room evaluations without the paperwork hassle. Our intuitive interface allows inspectors to quickly navigate through tasks, capture photos, and add notes on the go.",
-    },
-    {
-      icon: ShieldCheck,
-      title: "Compliance Assurance",
-      description:
-        "Stay updated with the latest hospitality regulations. Our system adapts to new guidelines, keeping your property compliant and guest-ready. Receive automatic updates on regulatory changes and ensure your inspections meet the highest standards.",
-    },
-    {
-      icon: Users,
-      title: "Admin Management",
-      description:
-        "Centralized control for administrators to oversee inspection processes, review submissions, and manage client establishments effectively. Gain insights through detailed reports and analytics to make informed decisions and improve operational efficiency.",
-    },
-    {
-      icon: Award,
-      title: "Quality Assurance",
-      description:
-        "Maintain consistently high standards across all accommodations through systematic pre-inspection processes and administrative oversight. Track performance metrics and identify areas for improvement to ensure exceptional guest experiences.",
-    },
-  ];
-
-  const inspectionSteps = [
-    {
-      icon: ClipboardList,
-      title: "Pre-Inspection",
-      description:
-        "Get ready for inspections by setting up schedules and checklists. We'll help you prepare everything you need for a smooth evaluation process.",
-      videoUrl: "/videos/pre-inspection.mp4",
-    },
-    {
-      icon: Search,
-      title: "On-Site Inspection",
-      description:
-        "Conduct thorough property inspections using our easy-to-use web platform. Take photos, add notes, and rate different areas all in one place.",
-      videoUrl: "/videos/on-site-inspection.mp4",
-    },
-    {
-      icon: BarChart2,
-      title: "Follow-up & Improvement",
-      description:
-        "Track how well improvements are being made. Set deadlines, assign tasks to team members, and keep an eye on progress to help your property get better.",
-      videoUrl: "/videos/follow-up-improvement.mp4",
-    },
-  ];
-
-  const faqItems = [
-    {
-      question: "How does the system improve inspection efficiency?",
-      answer:
-        "Our system digitizes the entire inspection process, from scheduling to reporting. This reduces paperwork, eliminates manual data entry, and allows for real-time collaboration, significantly speeding up inspections while improving accuracy and consistency across all rooms and facilities.",
-    },
-    {
-      question:
-        "Can the system be customized for different types of accommodations?",
-      answer:
-        "Yes, our system is highly flexible and can be tailored to various accommodation types, including hotels, resorts, vacation rentals. Customizable checklists and evaluation criteria ensure that inspections are relevant to your specific property type and brand standards.",
-    },
-    {
-      question: "How does the system ensure data security and guest privacy?",
-      answer:
-        "We adhere strictly to the Philippine Data Protection Law to safeguard all information. Our system employs robust encryption and security measures to protect data. Access to sensitive information is tightly controlled based on user roles, and we ensure that all data handling practices comply with the requirements set forth by the Philippine data protection regulations.",
-    },
-    {
-      question: "How does the system help in maintaining brand standards?",
-      answer:
-        "The system includes customizable checklists that reflect your brand standards. It provides detailed reports and actionable insights after each inspection, allowing you to track compliance with brand requirements. The system also offers trend analysis to help identify recurring issues that may affect brand consistency.",
-    },
-    {
-      question: "What kind of support and training do you offer?",
-      answer:
-        "We provide comprehensive onboarding and training for Tourism Officers, Hotel Staff, and Municipalities Inspectors. Our support team is available on a scheduled basis within Monday, Wednesday, Thursday, and Friday to assist with any questions or issues. We also offer regular webinars and updates on best practices in accommodation inspection and quality management.",
-    },
-    {
-      question:
-        "What legal mandates govern tourism data submission in Aurora Province?",
-      answer:
-        "Under Provincial Ordinance No. 473 and Republic Act No. 9593 (Tourism Act of 2009), all accommodation establishments in Aurora Province including Hotels, Resorts, Apartelles, Pension Houses, Tourist Inns, Transient Houses, and similar establishments are required to submit their tourism statistical data to the Provincial Tourism Office for proper implementation and monitoring.",
-    },
-    {
-      question:
-        "How does CATMS address the unique needs of Central Aurora's tourism industry?",
-      answer: (
-        <div className="space-y-4 text-justify">
-          <p>
-            CATMS is specifically designed to meet the unique requirements of
-            Central Aurora's diverse tourism landscape. It incorporates both DOT
-            (Department of Tourism) Standard Regulations and Local Standard
-            Regulations:
-          </p>
-          <ol className="list-decimal pl-5 space-y-2">
-            <li>
-              <span className="font-semibold">DOT Compliance:</span> The system
-              ensures all accommodations adhere to the latest DOT standards,
-              including the National Accommodation Standards for Hotels,
-              Resorts, and Apartment Hotels. It covers crucial areas such as
-              guest rooms, public areas, food and beverage outlets, kitchen and
-              food production areas, and guest services.
-            </li>
-            <li>
-              <span className="font-semibold">Local Regulations:</span> CATMS
-              integrates Central Aurora's specific local ordinances and
-              regulations, such as environmental protection measures for coastal
-              properties and cultural preservation guidelines for heritage
-              sites.
-            </li>
-            <li>
-              <span className="font-semibold">Customized Checklists:</span> The
-              system offers tailored inspection checklists for various
-              accommodation types found in Central Aurora, from beach resorts to
-              mountain lodges, ensuring relevant criteria for each property
-              type.
-            </li>
-            <li>
-              <span className="font-semibold">Seasonal Adaptability:</span> The
-              system accounts for Central Aurora's seasonal tourism patterns,
-              allowing for adjusted inspection schedules and criteria during
-              peak and off-peak seasons.
-            </li>
-            <li>
-              <span className="font-semibold">Local Collaboration:</span> CATMS
-              facilitates seamless cooperation between local government units,
-              property owners, and the Provincial Tourism Office, ensuring a
-              unified approach to maintaining and improving accommodation
-              standards across Central Aurora.
-            </li>
-            <li>
-              <span className="font-semibold">
-                Sustainable Tourism Practices:
-              </span>{" "}
-              In line with both DOT and local initiatives, the system
-              incorporates sustainability metrics, helping properties in Central
-              Aurora to implement and track eco-friendly practices.
-            </li>
-          </ol>
-          <p>
-            By addressing these specific needs, CATMS not only ensures
-            regulatory compliance but also contributes to the overall
-            improvement of Central Aurora's tourism industry, enhancing guest
-            experiences and supporting the region's reputation as a top-tier
-            destination.
-          </p>
-        </div>
-      ),
-    },
-  ];
+    return () => {
+      clearInterval(progressInterval);
+    };
+  }, [onComplete]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <header className="bg-indigo-700 text-white sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link href="/" className="flex items-center">
+    <motion.div
+      initial={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-900"
+    >
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 1.2, opacity: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col items-center justify-center"
+      >
+        <Image
+          src="/images/lap.png"
+          alt="CATMS Logo"
+          width={200}
+          height={200}
+          className="mb-8 animate-pulse"
+        />
+        <p className="text-white mb-4 text-center">{loadingText}</p>
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${loadingProgress}%` }}
+          transition={{ ease: "easeInOut" }}
+          className="h-1 bg-gradient-to-r from-amber-400 to-indigo-400 rounded-full"
+          style={{ width: `${loadingProgress}%`, maxWidth: "200px" }}
+        />
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// Pre-defined particle positions to avoid hydration errors
+const particlePositions = [
+  { width: 2, height: 3, left: "10%", top: "15%" },
+  { width: 3, height: 2, left: "20%", top: "25%" },
+  { width: 2, height: 2, left: "30%", top: "35%" },
+  { width: 2, height: 3, left: "40%", top: "45%" },
+  { width: 3, height: 2, left: "50%", top: "55%" },
+  { width: 2, height: 4, left: "60%", top: "65%" },
+  { width: 2, height: 3, left: "70%", top: "75%" },
+  { width: 4, height: 2, left: "80%", top: "85%" },
+  { width: 3, height: 3, left: "90%", top: "95%" },
+  { width: 2, height: 2, left: "15%", top: "10%" },
+  { width: 3, height: 4, left: "25%", top: "20%" },
+  { width: 2, height: 3, left: "35%", top: "30%" },
+  { width: 4, height: 2, left: "45%", top: "40%" },
+  { width: 3, height: 2, left: "55%", top: "50%" },
+  { width: 2, height: 3, left: "65%", top: "60%" },
+  { width: 2, height: 2, left: "75%", top: "70%" },
+  { width: 3, height: 3, left: "85%", top: "80%" },
+  { width: 2, height: 4, left: "95%", top: "90%" },
+  { width: 3, height: 2, left: "5%", top: "5%" },
+  { width: 2, height: 3, left: "95%", top: "5%" },
+];
+
+export default function NotFound() {
+  const [startupComplete, setStartupComplete] = useState(false);
+  const [showNotice, setShowNotice] = useState(false);
+  const [animatedParticles, setAnimatedParticles] = useState([]);
+
+  // Use useEffect to add animation properties after initial render
+  useEffect(() => {
+    if (startupComplete) {
+      const particles = particlePositions.map((particle, index) => ({
+        ...particle,
+        id: index,
+        delay: index * 0.1,
+        duration: 2 + (index % 3),
+      }));
+      setAnimatedParticles(particles);
+    }
+  }, [startupComplete]);
+
+  // Fixed reference ID for consistent rendering
+  const referenceId = "CATMS-47981-2025";
+
+  return (
+    <>
+      <AnimatePresence>
+        {!startupComplete && (
+          <StartupScreen onComplete={() => setStartupComplete(true)} />
+        )}
+      </AnimatePresence>
+
+      <div className="min-h-screen flex flex-col bg-[#2D2A59] relative overflow-hidden">
+        {/* Background elements */}
+        <div className="absolute inset-0 bg-[#2B2155] z-0" />
+
+        {/* Geometric elements - similar to original CATMS */}
+        <div className="absolute inset-0 z-1">
+          <div className="absolute top-0 right-0 w-2/3 h-full">
+            <svg
+              viewBox="0 0 800 600"
+              className="w-full h-full"
+              preserveAspectRatio="xMinYMin slice"
+            >
+              <path
+                d="M500,0 L800,0 L800,500 L500,200 Z"
+                fill="#B65B9C"
+                opacity="0.6"
+              />
+              <path
+                d="M400,600 L800,600 L600,200 L200,500 Z"
+                fill="#A85B9C"
+                opacity="0.7"
+              />
+              <path
+                d="M700,300 L800,100 L800,400 Z"
+                fill="#C75B9C"
+                opacity="0.8"
+              />
+            </svg>
+          </div>
+
+          {/* Small geometric accents */}
+          <div className="absolute top-20 left-20 w-4 h-4 rounded-full bg-white opacity-20"></div>
+          <div className="absolute top-40 left-40 w-2 h-2 rounded-full bg-white opacity-15"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-3 h-3 rounded-full bg-white opacity-10"></div>
+        </div>
+
+        {/* Animated particles in background - with fixed positions to avoid hydration errors */}
+        <div className="absolute inset-0 z-0 opacity-30">
+          {animatedParticles.map((particle) => (
+            <motion.div
+              key={particle.id}
+              className="absolute rounded-full bg-white"
+              style={{
+                width: particle.width,
+                height: particle.height,
+                left: particle.left,
+                top: particle.top,
+              }}
+              animate={{
+                y: [0, -20, 0],
+                opacity: [0.2, 0.6, 0.2],
+              }}
+              transition={{
+                duration: particle.duration,
+                repeat: Number.POSITIVE_INFINITY,
+                repeatType: "reverse",
+                delay: particle.delay,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Main content */}
+        <main className="flex-grow flex items-center justify-center p-4 z-10 relative">
+          <div className="container max-w-4xl mx-auto">
+            <motion.div
+              className="text-center mb-12"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+            >
+              <motion.div
+                className="mb-8"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.8 }}
+              >
                 <Image
                   src="/images/lap.png"
-                  alt="AccomoInspect Logo"
-                  width={70}
-                  height={70}
+                  alt="CATMS Logo"
+                  width={120}
+                  height={120}
+                  className="mx-auto"
                 />
-              </Link>
-            </div>
-            <nav className="hidden md:block">
-              <ul className="flex space-x-6">
-                <li>
-                  <Link href="/" className="hover:underline">
-                    Home
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#features" className="hover:underline">
-                    Features
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#process" className="hover:underline">
-                    Process
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#faq" className="hover:underline">
-                    FAQ
-                  </Link>
-                </li>
-              </ul>
-            </nav>
-          </div>
-        </div>
-      </header>
+              </motion.div>
 
-      <main>
-        <section className="bg-gradient-to-b from-indigo-800 to-indigo-600 py-20">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col md:flex-row items-center">
-              <motion.div
-                className="md:w-1/2 mb-8 md:mb-0"
+              <motion.h1
+                className="text-5xl md:text-7xl font-black text-white mb-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.8, delay: 1 }}
               >
-                <h1 className="text-4xl md:text-5xl font-bold text-sky-100 mb-4">
-                  Central Aurora Tourism Management System
-                </h1>
-                <p className="text-xl text-sky-200 mb-6">
-                  CATMS: Your all-in-one solution for efficient, transparent,
-                  and standardized accommodation inspections. Empower your team
-                  to maintain world-class standards and enhance guest
-                  satisfaction.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button
-                    size="lg"
-                    variant="secondary"
-                    className="bg-amber-400 text-indigo-900 hover:bg-amber-300"
-                    onClick={openVideoModal}
-                  >
-                    Watch Demo
-                  </Button>
-                  <Link href="/login">
-                    <Button
-                      size="lg"
-                      variant="secondary"
-                      className="bg-amber-400 text-indigo-900 hover:bg-amber-300"
-                    >
-                      Sign Up
-                    </Button>
-                  </Link>
-                </div>
-              </motion.div>
-              <motion.div
-                className="md:w-1/2"
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                <div className="relative w-full h-[400px]">
-                  {images.map((src, index) => (
-                    <Image
-                      key={src}
-                      src={src || "/placeholder.svg"}
-                      alt={`Slide ${index + 1}`}
-                      fill
-                      className={`rounded-lg shadow-lg object-cover transition-opacity duration-1000 ${
-                        index === currentImageIndex
-                          ? "opacity-100"
-                          : "opacity-0"
-                      }`}
-                      priority={index === 0}
-                    />
-                  ))}
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </section>
+                System Temporarily Unavailable
+              </motion.h1>
 
-        <section id="features" className="py-20 bg-white">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12 text-teal-800">
-              Why Choose CATMS?
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {features.map((feature, index) => (
-                <Card
-                  key={index}
-                  className="hover:shadow-lg transition-shadow duration-300"
-                >
+              <motion.div
+                className="max-w-2xl mx-auto"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.2, duration: 0.8 }}
+              >
+                <Card className="bg-white/5 backdrop-blur-sm border border-white/10 mb-8">
                   <CardContent className="p-6">
-                    <feature.icon size={40} className="text-indigo-600 mb-4" />
-                    <h3 className="text-xl font-semibold mb-2 text-indigo-800">
-                      {feature.title}
-                    </h3>
-                    <p className="text-gray-600">{feature.description}</p>
+                    <div className="flex items-start mb-6">
+                      <AlertCircle className="text-[#FF7A59] w-6 h-6 mr-3 mt-1 flex-shrink-0" />
+                      <div className="text-white text-lg text-left">
+                        <p className="mb-4">
+                          The Central Aurora Tourism Management System is
+                          currently unavailable. This decision was made by the
+                          Developers and the staff of Aurora Tourism.
+                        </p>
+                        <p className="text-white/80">
+                          We're working on a new and improved system that will
+                          be launched in the future. Thank you for your patience
+                          and understanding.
+                        </p>
+                      </div>
+                    </div>
+
+                    <motion.div
+                      className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 1.5, duration: 0.8 }}
+                    >
+                      <div className="bg-white/5 rounded-lg p-4 text-center">
+                        <Clock className="w-8 h-8 text-[#FF7A59] mx-auto mb-2" />
+                        <p className="text-white/70 text-sm">Status Update</p>
+                        <p className="text-white">May 11, 2025</p>
+                      </div>
+
+                      <div className="bg-white/5 rounded-lg p-4 text-center">
+                        <Construction className="w-8 h-8 text-[#FF7A59] mx-auto mb-2" />
+                        <p className="text-white/70 text-sm">Current Status</p>
+                        <p className="text-white">Under Development</p>
+                      </div>
+
+                      <div className="bg-white/5 rounded-lg p-4 text-center">
+                        <AlertCircle className="w-8 h-8 text-[#FF7A59] mx-auto mb-2" />
+                        <p className="text-white/70 text-sm">Reference ID</p>
+                        <p className="text-white">{referenceId}</p>
+                      </div>
+                    </motion.div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          </div>
-        </section>
 
-        <section id="process" className="py-20 bg-gray-50">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12 text-teal-800">
-              Streamlined Inspection Process
-            </h2>
-            <Tabs defaultValue="pre-inspection" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-8">
-                {inspectionSteps.map((step, index) => (
-                  <TabsTrigger
-                    key={index}
-                    value={step.title.toLowerCase().replace(" ", "-")}
-                    className="text-indigo-600 data-[state=active]:bg-indigo-100"
-                  >
-                    {step.title}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              {inspectionSteps.map((step, index) => (
-                <TabsContent
-                  key={index}
-                  value={step.title.toLowerCase().replace(" ", "-")}
+                <motion.div
+                  className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.8, duration: 0.8 }}
                 >
-                  <Card className="border-teal-200">
+                  <Button
+                    className="bg-gradient-to-r from-[#FF7A59] to-[#E55A3A] text-white hover:opacity-90"
+                    onClick={() => setShowNotice(!showNotice)}
+                  >
+                    {showNotice ? "Hide" : "View"} Official Notice
+                  </Button>
+
+                  <Link href="https://www.aurora.ph/" passHref>
+                    <Button
+                      variant="outline"
+                      className="border-white/20 text-black hover:bg-white/10"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Visit Tourism Portal
+                    </Button>
+                  </Link>
+                </motion.div>
+              </motion.div>
+            </motion.div>
+
+            {/* Official Notice */}
+            <AnimatePresence>
+              {showNotice && (
+                <motion.div
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 50 }}
+                  transition={{ duration: 0.5 }}
+                  className="mt-8 mb-12"
+                >
+                  <Card className="bg-white/5 backdrop-blur-sm border-white/10">
+                    <CardHeader className="border-b border-white/10">
+                      <CardTitle className="flex items-center text-white">
+                        <FileText className="w-5 h-5 text-[#FF7A59] mr-2" />
+                        Official System Status Notice
+                      </CardTitle>
+                    </CardHeader>
                     <CardContent className="p-6">
-                      <div className="flex items-center mb-4">
-                        <step.icon size={24} className="text-teal-600 mr-4" />
-                        <h3 className="text-2xl font-bold text-teal-800">
-                          {step.title}
-                        </h3>
-                      </div>
-                      <p className="text-gray-600 mb-4">{step.description}</p>
-                      <div className="aspect-video bg-teal-50 rounded-lg overflow-hidden">
-                        {step.videoUrl ? (
-                          <video
-                            src={step.videoUrl}
-                            controls
-                            className="w-full h-full object-cover"
-                          >
-                            Your browser does not support the video tag.
-                          </video>
-                        ) : (
-                          <p className="flex items-center justify-center h-full text-teal-500">
-                            Video coming soon
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                          <h3 className="text-lg font-semibold text-white mb-2">
+                            System Information
+                          </h3>
+                          <p className="text-white/70 text-sm mb-1">
+                            System: CATMS (Central Aurora Tourism Management
+                            System)
                           </p>
-                        )}
+                          <p className="text-white/70 text-sm mb-1">
+                            Status: Temporarily Offline
+                          </p>
+                          <p className="text-white/70 text-sm">
+                            Last Update: May 11, 2025
+                          </p>
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-white mb-2">
+                            Administrator
+                          </h3>
+                          <p className="text-white/70 text-sm mb-1">
+                            Aurora Provincial Tourism Office
+                          </p>
+                          <p className="text-white/70 text-sm mb-1">
+                            Email: auroratourismdev@outlook.com
+                          </p>
+                          <p className="text-white/70 text-sm">
+                            Reference: SYS-UPDATE-5678
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="border-t border-white/10 pt-6 mb-6">
+                        <h3 className="text-lg font-semibold text-white mb-4">
+                          System Status Details
+                        </h3>
+                        <div className="space-y-4">
+                          <div className="bg-white/5 p-4 rounded-lg">
+                            <h4 className="text-white font-medium mb-2">
+                              Current Status
+                            </h4>
+                            <p className="text-white/70 text-sm">
+                              After careful consideration, the Developers and
+                              staff of Aurora Tourism have decided to
+                              temporarily take the Central Aurora Tourism
+                              Management System offline. We are working on a new
+                              and improved version that will better serve the
+                              needs of our users and the tourism industry in
+                              Aurora Province.
+                            </p>
+                          </div>
+                          <div className="bg-white/5 p-4 rounded-lg">
+                            <h4 className="text-white font-medium mb-2">
+                              Data Handling
+                            </h4>
+                            <p className="text-white/70 text-sm">
+                              All user data has been securely preserved in
+                              accordance with our privacy policy and data
+                              protection regulations. Your information will be
+                              migrated to the new system when it becomes
+                              available.
+                            </p>
+                          </div>
+                          <div className="bg-white/5 p-4 rounded-lg">
+                            <h4 className="text-white font-medium mb-2">
+                              Future Plans
+                            </h4>
+                            <p className="text-white/70 text-sm">
+                              We are developing a new system with enhanced
+                              features and improved user experience. We
+                              anticipate launching the new platform in the
+                              coming months. Updates will be provided via email
+                              to registered users.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="border-t border-white/10 pt-6">
+                        <div className="flex justify-between items-center">
+                          <div className="text-white/70 text-sm">
+                            <p>Document generated automatically</p>
+                            <p className="text-xs mt-1">
+                              For the latest updates, please contact the Aurora
+                              Tourism Office.
+                            </p>
+                          </div>
+                          <div className="flex items-center">
+                            <Image
+                              src="/images/lap.png"
+                              alt="Official Seal"
+                              width={100}
+                              height={50}
+                              className="opacity-50"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
-                </TabsContent>
-              ))}
-            </Tabs>
-          </div>
-        </section>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-        <section className="py-20 bg-white">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12 text-teal-800">
-              Empowering Your Accommodation Business
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <FileText size={48} className="text-teal-600 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2 text-teal-800">
-                    For Inspectors
+            {/* Coming Soon Section */}
+            <motion.div
+              className="mt-12 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 2, duration: 1 }}
+            >
+              <h2 className="text-2xl font-bold text-white mb-4">
+                Coming Soon
+              </h2>
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 max-w-2xl mx-auto">
+                <div className="flex items-center justify-center mb-4">
+                  <div className="w-16 h-0.5 bg-[#FF7A59] mr-4"></div>
+                  <h3 className="text-xl font-bold text-white">
+                    New System Under Development
                   </h3>
-                  <p className="text-gray-600">
-                    Streamline your workflow, access real-time data, and conduct
-                    more efficient room-by-room inspections.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Building size={48} className="text-teal-600 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2 text-teal-800">
-                    For Property Managers
-                  </h3>
-                  <p className="text-gray-600">
-                    Maintain high standards, track performance, and improve
-                    guest satisfaction with data-driven insights.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Zap size={48} className="text-teal-600 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2 text-teal-800">
-                    Administrator of Provincial Tourism Office
-                  </h3>
-                  <p className="text-gray-600">
-                    Gain comprehensive insights, ensure brand consistency, and
-                    drive continuous improvement across your properties using
-                    our web-based system.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
+                  <div className="w-16 h-0.5 bg-[#FF7A59] ml-4"></div>
+                </div>
+                <p className="text-white/70 mb-6">
+                  We're working on a new and improved tourism management system
+                  that will provide enhanced features, better performance, and
+                  an improved user experience.
+                </p>
 
-        <section id="faq" className="py-20 bg-gray-50">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12 text-teal-800">
-              Frequently Asked Questions
-            </h2>
-            <div className="space-y-4 w-full max-w-3xl mx-auto">
-              {faqItems.map((item, index) => (
-                <Card key={index} className="overflow-hidden">
-                  <CardContent className="p-0">
-                    <button
-                      className="flex justify-between items-center w-full p-4 text-left focus:outline-none focus:ring-2 focus:ring-teal-500"
-                      onClick={() => toggleFAQ(index)}
-                    >
-                      <span className="text-lg font-semibold text-teal-700">
-                        {item.question}
-                      </span>
-                      {expandedFAQ === index ? (
-                        <ChevronUp className="h-5 w-5 text-teal-500" />
-                      ) : (
-                        <ChevronDown className="h-5 w-5 text-teal-500" />
-                      )}
-                    </button>
-                    <AnimatePresence>
-                      {expandedFAQ === index && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className="px-4 pb-4"
-                        >
-                          <div className="text-gray-600">{item.answer}</div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-      </main>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-white/5 p-4 rounded-lg text-center">
+                    <div className="bg-[#2D2A59] p-3 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                      <svg
+                        className="w-6 h-6 text-[#FF7A59]"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </div>
+                    <h4 className="text-white font-medium mb-1">
+                      Enhanced Features
+                    </h4>
+                    <p className="text-white/70 text-sm">
+                      New tools and capabilities to better serve tourism needs
+                    </p>
+                  </div>
 
-      <footer className="bg-gray-800 text-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <h3 className="text-lg font-semibold mb-4">
-                About Central Aurora Tourism Management System
-              </h3>
-              <p className="text-sm">
-                CATMS is the leading accommodation inspection management system,
-                streamlining quality control processes for hotels, resorts, and
-                vacation rentals worldwide. Our mission is to elevate
-                hospitality standards and enhance guest experiences through
-                efficient, data-driven inspections.
-              </p>
-              <div className="flex space-x-4 mt-4">
-                <Image
-                  src="/images/DOT.png"
-                  alt="DOT"
-                  width={80}
-                  height={80}
-                  className="object-contain"
-                />
-                <Image
-                  src="/images/lap.png"
-                  alt="AURORA"
-                  width={80}
-                  height={80}
-                  className="object-contain"
-                />
-                <Image
-                  src="/images/bgaurora.png"
-                  alt="TOURISM"
-                  width={80}
-                  height={80}
-                  className="object-contain"
-                />
+                  <div className="bg-white/5 p-4 rounded-lg text-center">
+                    <div className="bg-[#2D2A59] p-3 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                      <svg
+                        className="w-6 h-6 text-[#FF7A59]"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </div>
+                    <h4 className="text-white font-medium mb-1">
+                      Improved Performance
+                    </h4>
+                    <p className="text-white/70 text-sm">
+                      Faster, more reliable system with better uptime
+                    </p>
+                  </div>
+
+                  <div className="bg-white/5 p-4 rounded-lg text-center">
+                    <div className="bg-[#2D2A59] p-3 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
+                      <svg
+                        className="w-6 h-6 text-[#FF7A59]"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                        />
+                      </svg>
+                    </div>
+                    <h4 className="text-white font-medium mb-1">
+                      User-Focused Design
+                    </h4>
+                    <p className="text-white/70 text-sm">
+                      Redesigned interface for better user experience
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-              <ul className="space-y-2">
-                <li>
-                  <Link href="#features" className="text-sm hover:underline">
-                    Features
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#process" className="text-sm hover:underline">
-                    Our Process
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#faq" className="text-sm hover:underline">
-                    FAQ
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/privacy" className="text-sm hover:underline">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="https://beta.tourism.gov.ph/accreditations/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm hover:underline flex items-center gap-1 group"
-                  >
-                    DOT Accreditation Portal
-                    <svg
-                      className="w-4 h-4 inline transition-transform group-hover:translate-x-0.5"
-                      fill="true"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">
-                Contact Information
-              </h3>
-              <p className="text-sm">123 Hospitality Avenue, Global City</p>
-              <p className="text-sm">Phone: (123) 456-7890</p>
-              <p className="text-sm">Email: auroratourismdev@outlook.com</p>
-            </div>
+            </motion.div>
           </div>
-          <div className="mt-8 pt-8 border-t border-gray-700 text-center">
-            <p className="text-sm">
-              &copy; {new Date().getFullYear()} CATMS All rights reserved.
-              Develop by クリスチャン ジョセフ マリグメン.
-            </p>
-          </div>
-        </div>
-      </footer>
+        </main>
 
-      {isVideoModalOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              closeVideoModal();
-            }
-          }}
-        >
-          <div className="relative w-full max-w-4xl bg-white rounded-lg shadow-lg">
-            <div className="aspect-video">
-              <video
-                src="/videos/demo.mp4"
-                controls
-                className="w-full h-full rounded-lg"
-                title="Demo Video"
-              >
-                Your browser does not support the video tag.
-              </video>
+        {/* Footer - Removed Privacy Policy, Terms of Service, and Contact links */}
+        <footer className="bg-[#241F4B]/50 backdrop-blur-sm text-white py-6 relative border-t border-white/10 z-10">
+          <div className="container mx-auto px-4">
+            <div className="text-center">
+              <p className="text-sm text-white/50">
+                &copy; 2025 CATMS - Aurora Provincial Tourism Office
+              </p>
             </div>
           </div>
-        </div>
-      )}
-      <Toaster />
-    </div>
+        </footer>
+      </div>
+    </>
   );
 }
