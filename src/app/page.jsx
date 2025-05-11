@@ -628,36 +628,55 @@ export default function CATMS() {
           <section className="hero-section relative min-h-screen flex items-center justify-center overflow-hidden">
             {/* Main background */}
             <div className="absolute inset-0 bg-[#2B2155] z-0" />
-            
+
             {/* 3D Geometric elements */}
             <div className="absolute inset-0 z-1">
               {/* Large pink/purple triangular mountain shapes */}
               <div className="absolute top-0 right-0 w-2/3 h-full">
-                <svg viewBox="0 0 800 600" className="w-full h-full" preserveAspectRatio="xMinYMin slice">
-                  <path d="M500,0 L800,0 L800,500 L500,200 Z" fill="#B65B9C" opacity="0.6" />
-                  <path d="M400,600 L800,600 L600,200 L200,500 Z" fill="#A85B9C" opacity="0.7" />
-                  <path d="M700,300 L800,100 L800,400 Z" fill="#C75B9C" opacity="0.8" />
+                <svg
+                  viewBox="0 0 800 600"
+                  className="w-full h-full"
+                  preserveAspectRatio="xMinYMin slice"
+                >
+                  <path
+                    d="M500,0 L800,0 L800,500 L500,200 Z"
+                    fill="#B65B9C"
+                    opacity="0.6"
+                  />
+                  <path
+                    d="M400,600 L800,600 L600,200 L200,500 Z"
+                    fill="#A85B9C"
+                    opacity="0.7"
+                  />
+                  <path
+                    d="M700,300 L800,100 L800,400 Z"
+                    fill="#C75B9C"
+                    opacity="0.8"
+                  />
                 </svg>
               </div>
-              
+
               {/* Small geometric accents */}
               <div className="absolute top-20 left-20 w-4 h-4 rounded-full bg-white opacity-20"></div>
               <div className="absolute top-40 left-40 w-2 h-2 rounded-full bg-white opacity-15"></div>
               <div className="absolute bottom-1/4 left-1/3 w-3 h-3 rounded-full bg-white opacity-10"></div>
             </div>
-            
+
             {/* Main Content */}
             <div className="container mx-auto px-4 z-10 relative">
               <div className="flex flex-col md:flex-row items-center">
                 <div className="md:w-1/2 mb-8 md:mb-0">
                   <div className="relative">
                     <h1 className="text-8xl md:text-9xl font-black text-white mb-4 leading-tight tracking-tighter">
-                      CATMS<span className="text-[#FF7A59] absolute text-4xl">*</span>
+                      CATMS
+                      <span className="text-[#FF7A59] absolute text-4xl">
+                        *
+                      </span>
                     </h1>
                   </div>
                   <p className="text-xl text-white/90 mb-8">
-                    Join us for an epic week of hiking, team-building, and digital detoxing. This system 
-                    brings your property to life.
+                    Join us for an epic week of hiking, team-building, and
+                    digital detoxing. This system brings your property to life.
                   </p>
                   <div className="cta-buttons">
                     <Button
@@ -673,7 +692,7 @@ export default function CATMS() {
                 </div>
               </div>
             </div>
-            
+
             {/* Bottom navigation/indicators */}
             <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex space-x-16 text-white/70">
               <div className="text-center">
@@ -705,9 +724,11 @@ export default function CATMS() {
                   Choose your Adventure
                 </h2>
                 <div className="flex-grow h-0.5 bg-white/10 ml-4"></div>
-                <div className="text-[#FF7A59] font-mono ml-4">01 / Range of Activities</div>
+                <div className="text-[#FF7A59] font-mono ml-4">
+                  01 / Range of Activities
+                </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {features.map((feature, index) => (
                   <motion.div
@@ -724,18 +745,15 @@ export default function CATMS() {
                           0{index + 1}
                         </div>
                         <div className="bg-[#2D2A59] p-4 rounded-lg mb-6 inline-block">
-                          <feature.icon
-                            size={32}
-                            className="text-[#FF7A59]"
-                          />
+                          <feature.icon size={32} className="text-[#FF7A59]" />
                         </div>
                         <h3 className="text-2xl font-bold mb-3 text-white">
                           {feature.title}
                         </h3>
-                        <p className="text-white/70 text-sm">{feature.description}</p>
-                        <Button
-                          className="mt-6 bg-[#FF7A59] text-white hover:bg-[#E55A3A] rounded-full"
-                        >
+                        <p className="text-white/70 text-sm">
+                          {feature.description}
+                        </p>
+                        <Button className="mt-6 bg-[#FF7A59] text-white hover:bg-[#E55A3A] rounded-full">
                           Explore
                         </Button>
                       </CardContent>
@@ -755,9 +773,11 @@ export default function CATMS() {
                   Inspection Process
                 </h2>
                 <div className="flex-grow h-0.5 bg-white/10 ml-4"></div>
-                <div className="text-[#FF7A59] font-mono ml-4">02 / How It Works</div>
+                <div className="text-[#FF7A59] font-mono ml-4">
+                  02 / How It Works
+                </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {inspectionSteps.map((step, index) => (
                   <motion.div
@@ -774,18 +794,15 @@ export default function CATMS() {
                           0{index + 1}
                         </div>
                         <div className="bg-[#2D2A59] p-4 rounded-lg mb-6 inline-block">
-                          <step.icon
-                            size={32}
-                            className="text-[#FF7A59]"
-                          />
+                          <step.icon size={32} className="text-[#FF7A59]" />
                         </div>
                         <h3 className="text-2xl font-bold mb-3 text-white">
                           {step.title}
                         </h3>
-                        <p className="text-white/70 text-sm flex-grow">{step.description}</p>
-                        <Button
-                          className="mt-6 bg-[#FF7A59] text-white hover:bg-[#E55A3A] rounded-full"
-                        >
+                        <p className="text-white/70 text-sm flex-grow">
+                          {step.description}
+                        </p>
+                        <Button className="mt-6 bg-[#FF7A59] text-white hover:bg-[#E55A3A] rounded-full">
                           Explore
                         </Button>
                       </CardContent>
@@ -805,9 +822,11 @@ export default function CATMS() {
                   Browse our Gallery
                 </h2>
                 <div className="flex-grow h-0.5 bg-white/10 ml-4"></div>
-                <div className="text-[#FF7A59] font-mono ml-4">03 / Visual Showcase</div>
+                <div className="text-[#FF7A59] font-mono ml-4">
+                  03 / Visual Showcase
+                </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="relative rounded-xl overflow-hidden h-[500px]">
                   <Image
@@ -818,27 +837,41 @@ export default function CATMS() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#2D2A59] to-transparent"></div>
                   <div className="absolute bottom-0 left-0 p-8">
-                    <h3 className="text-3xl font-bold text-white mb-2">Baler Solitude</h3>
+                    <h3 className="text-3xl font-bold text-white mb-2">
+                      Baler Solitude
+                    </h3>
                     <p className="text-white/70">2023</p>
                     <Button className="mt-4 bg-[#FF7A59] text-white hover:bg-[#E55A3A] rounded-full">
                       Explore Photo
                     </Button>
                   </div>
                 </div>
-                
+
                 <div className="bg-[#332E70] rounded-xl p-8">
                   <div className="grid grid-cols-2 gap-4 h-full">
                     <div>
-                      <h4 className="text-xl font-bold text-white mb-4">Photographer</h4>
-                      <p className="text-white/70 text-sm">The DOT tourism team has taken detailed shots of many destinations across Aurora province.</p>
-                      
-                      <h4 className="text-xl font-bold text-white mb-4 mt-8">Year</h4>
+                      <h4 className="text-xl font-bold text-white mb-4">
+                        Photographer
+                      </h4>
+                      <p className="text-white/70 text-sm">
+                        The DOT tourism team has taken detailed shots of many
+                        destinations across Aurora province.
+                      </p>
+
+                      <h4 className="text-xl font-bold text-white mb-4 mt-8">
+                        Year
+                      </h4>
                       <p className="text-white/70 text-sm">2023</p>
-                      
-                      <h4 className="text-xl font-bold text-white mb-4 mt-8">Description</h4>
-                      <p className="text-white/70 text-sm">An inspiring hotel inspection system based on natural elements and clean design.</p>
+
+                      <h4 className="text-xl font-bold text-white mb-4 mt-8">
+                        Description
+                      </h4>
+                      <p className="text-white/70 text-sm">
+                        An inspiring hotel inspection system based on natural
+                        elements and clean design.
+                      </p>
                     </div>
-                    
+
                     <div className="flex items-end">
                       <Button className="w-full bg-[#FF7A59] text-white hover:bg-[#E55A3A] rounded-full h-12">
                         View Full Gallery
@@ -859,9 +892,11 @@ export default function CATMS() {
                   Frequently Asked Questions
                 </h2>
                 <div className="flex-grow h-0.5 bg-white/10 ml-4"></div>
-                <div className="text-[#FF7A59] font-mono ml-4">04 / Help Center</div>
+                <div className="text-[#FF7A59] font-mono ml-4">
+                  04 / Help Center
+                </div>
               </div>
-              
+
               <div className="space-y-4 w-full max-w-3xl mx-auto">
                 {faqItems.map((item, index) => (
                   <Card
