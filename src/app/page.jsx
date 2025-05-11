@@ -4,26 +4,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { TourProvider, useTour } from "@reactour/tour";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import {
-  Hotel,
   ClipboardCheck,
   ShieldCheck,
-  TrendingUp,
   Users,
-  Bell,
   Award,
   ClipboardList,
   Search,
-  CheckCircle,
   BarChart2,
-  FileText,
-  Building,
-  Zap,
 } from "lucide-react";
 
 const images = [
@@ -39,122 +30,20 @@ const images = [
   "/images/caption.png",
 ];
 
-const steps = [
-  {
-    selector: ".hero-section",
-    content: (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-center"
-      >
-        <h3 className="text-xl font-bold mb-2">Welcome to CATMS!</h3>
-        <p>
-          Let's take a quick tour of our features and discover how we can help
-          you streamline your accommodation inspections.
-        </p>
-      </motion.div>
-    ),
-  },
-  {
-    selector: "#features",
-    content: (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-center"
-      >
-        <h3 className="text-xl font-bold mb-2">Powerful Features</h3>
-        <p>
-          Discover our key features that make accommodation inspection easier
-          and more efficient. From digital checklists to real-time reporting,
-          we've got you covered.
-        </p>
-      </motion.div>
-    ),
-  },
-  {
-    selector: "#process",
-    content: (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-center"
-      >
-        <h3 className="text-xl font-bold mb-2">Streamlined Process</h3>
-        <p>
-          Learn about our streamlined inspection process in three simple steps.
-          We've designed it to save you time and ensure thorough evaluations.
-        </p>
-      </motion.div>
-    ),
-  },
-  {
-    selector: "#faq",
-    content: (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-center"
-      >
-        <h3 className="text-xl font-bold mb-2">Got Questions?</h3>
-        <p>
-          Find answers to common questions about our system. We're here to help
-          you understand how CATMS can benefit your business.
-        </p>
-      </motion.div>
-    ),
-  },
-  {
-    selector: ".cta-buttons",
-    content: (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-center"
-      >
-        <h3 className="text-xl font-bold mb-2">Ready to Get Started?</h3>
-        <p>
-          Sign up now or watch our demo to see CATMS in action. We can't wait to
-          help you transform your inspection process!
-        </p>
-      </motion.div>
-    ),
-  },
-];
-
-function TourContent() {
-  const { setIsOpen } = useTour();
-
-  useEffect(() => {
-    const hasVisited = localStorage.getItem("hasVisited");
-    if (!hasVisited) {
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-        localStorage.setItem("hasVisited", "true");
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [setIsOpen]);
-
-  return null;
-}
-
 function StartupScreen() {
   const [isVisible, setIsVisible] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     const timer = setTimeout(() => {
       setIsVisible(false);
     }, 3000);
 
     return () => clearTimeout(timer);
   }, []);
+
+  if (!isMounted) return null;
 
   return (
     <AnimatePresence>
@@ -201,8 +90,11 @@ export default function CATMS() {
   const [isImageTransitioning, setIsImageTransitioning] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [activeSection, setActiveSection] = useState("home");
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+
     const handleMouseMove = (e) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
@@ -212,6 +104,8 @@ export default function CATMS() {
   }, []);
 
   useEffect(() => {
+    if (!isMounted) return;
+
     const interval = setInterval(() => {
       setIsImageTransitioning(true);
       setTimeout(() => {
@@ -229,9 +123,11 @@ export default function CATMS() {
       clearInterval(interval);
       window.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [isMounted]);
 
   useEffect(() => {
+    if (!isMounted) return;
+
     const handleScroll = () => {
       const sections = {
         home: document.querySelector(".hero-section"),
@@ -256,7 +152,7 @@ export default function CATMS() {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [isMounted]);
 
   const openVideoModal = () => {
     setIsVideoModalOpen(true);
@@ -427,6 +323,8 @@ export default function CATMS() {
   ];
 
   const scrollToSection = (sectionId) => {
+    if (!isMounted) return;
+
     const element = document.querySelector(
       sectionId === "home" ? ".hero-section" : `#${sectionId}`
     );
@@ -442,54 +340,17 @@ export default function CATMS() {
     }
   };
 
+  // Return a simple loading state or null for initial server render
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#2D2A59] relative overflow-hidden">
+        <div className="fixed inset-0 bg-[#2B2155]"></div>
+      </div>
+    );
+  }
+
   return (
-    <TourProvider
-      steps={steps}
-      styles={{
-        popover: (base) => ({
-          ...base,
-          "--reactour-accent": "#6c5ce7",
-          borderRadius: 16,
-          padding: 24,
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-          backdropFilter: "blur(12px)",
-          backgroundColor: "rgba(255, 255, 255, 0.1)",
-          border: "1px solid rgba(255, 255, 255, 0.2)",
-        }),
-        dot: (base, { current }) => ({
-          ...base,
-          background: current ? "#6c5ce7" : "#ccc",
-          width: current ? 12 : 8,
-          height: current ? 12 : 8,
-          transition: "all 0.3s ease",
-        }),
-        button: (base) => ({
-          ...base,
-          padding: "8px 16px",
-          borderRadius: 6,
-          transition: "all 0.3s ease",
-        }),
-        close: (base) => ({
-          ...base,
-          display: "none",
-        }),
-      }}
-      showNavigation={true}
-      showBadge={false}
-      showDots={true}
-      showNavigationNumber={true}
-      disableInteraction={false}
-      disableDotsNavigation={false}
-      disableKeyboardNavigation={false}
-      inViewThreshold={100}
-      maskClassName="bg-black/50"
-      className="helper"
-      accentColor="#6c5ce7"
-      position="bottom"
-      padding={10}
-      maskSpace={10}
-      arrowColor="#fff"
-    >
+    <>
       <StartupScreen />
       <div className="min-h-screen flex flex-col bg-[#2D2A59] relative overflow-hidden">
         {/* Enhanced dramatic background effect */}
@@ -618,6 +479,47 @@ export default function CATMS() {
                       </button>
                     </li>
                   ))}
+                  <li className="relative">
+                    <Link
+                      href="/login"
+                      className={`
+                        px-4 
+                        py-2 
+                        text-white 
+                        transition-all
+                        duration-300 
+                        relative 
+                        text-sm
+                        font-medium
+                        uppercase
+                        tracking-wider
+                        hover:text-[#FF7A59]
+                        bg-[#9D4F9A]/30
+                        hover:bg-[#9D4F9A]/50
+                        backdrop-blur-sm
+                        rounded-sm
+                        flex items-center gap-2
+                      `}
+                    >
+                      <span>Login</span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="transition-transform group-hover:translate-x-1"
+                      >
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                        <polyline points="10 17 15 12 10 7"></polyline>
+                        <line x1="15" y1="12" x2="3" y2="12"></line>
+                      </svg>
+                    </Link>
+                  </li>
                 </ul>
               </motion.nav>
             </div>
@@ -690,27 +592,6 @@ export default function CATMS() {
                 <div className="md:w-1/2 relative">
                   {/* This space intentionally left empty to showcase the geometric background */}
                 </div>
-              </div>
-            </div>
-
-            {/* Bottom navigation/indicators */}
-            <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex space-x-16 text-white/70">
-              <div className="text-center">
-                <span className="text-xs uppercase">LOCATION</span>
-              </div>
-              <div className="text-center">
-                <span className="text-xs uppercase">ITINERARY</span>
-              </div>
-              <div className="text-center">
-                <span className="text-xs uppercase">SCHEDULE</span>
-              </div>
-              <div className="text-center">
-                <span className="text-xs uppercase">AVAILABILITY</span>
-              </div>
-              <div className="text-center">
-                <Button className="bg-[#9D4F9A]/30 backdrop-blur-sm text-white hover:bg-[#9D4F9A]/50 px-6 py-1 rounded-sm">
-                  Login
-                </Button>
               </div>
             </div>
           </section>
@@ -1078,7 +959,6 @@ export default function CATMS() {
           </motion.div>
         )}
       </div>
-      <TourContent />
-    </TourProvider>
+    </>
   );
 }
