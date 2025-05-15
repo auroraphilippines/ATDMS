@@ -1,7 +1,18 @@
 "use client";
 import React, { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { LockIcon, MailIcon, UserIcon, Loader2, Eye, EyeOff, Facebook, Twitter, Linkedin, Home } from "lucide-react";
+import {
+  LockIcon,
+  MailIcon,
+  UserIcon,
+  Loader2,
+  Eye,
+  EyeOff,
+  Facebook,
+  Twitter,
+  Linkedin,
+  Home,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createUser, getCurrentUser, signIn } from "@/services/appwrite";
 import { useAuthUserStore } from "@/services/user";
@@ -155,11 +166,11 @@ export default function LoginPage() {
         @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap");
 
         :root {
-          --primary-bg: #2D2A59;
-          --secondary-bg: #332E70;
-          --dark-bg: #241F4B;
-          --accent: #FF7A59;
-          --accent-hover: #E55A3A;
+          --primary-bg: #2d2a59;
+          --secondary-bg: #332e70;
+          --dark-bg: #241f4b;
+          --accent: #ff7a59;
+          --accent-hover: #e55a3a;
           --white: #ffffff;
           --white-70: rgba(255, 255, 255, 0.7);
           --white-10: rgba(255, 255, 255, 0.1);
@@ -185,7 +196,7 @@ export default function LoginPage() {
           font-family: "Montserrat", sans-serif;
           font-size: 12px;
           background: var(--primary-bg);
-          background: linear-gradient(135deg, #2B2155 0%, #493F8D 100%);
+          background: linear-gradient(135deg, #2b2155 0%, #493f8d 100%);
           color: var(--white-70);
           padding: 0;
           margin: 0;
@@ -214,7 +225,7 @@ export default function LoginPage() {
 
         .triangle {
           position: absolute;
-          background: #B65B9C;
+          background: #b65b9c;
           opacity: 0.6;
           clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
           transform-style: preserve-3d;
@@ -234,7 +245,7 @@ export default function LoginPage() {
           left: 10%;
           width: 25vw;
           height: 25vw;
-          background: #A85B9C;
+          background: #a85b9c;
           opacity: 0.7;
           transform: translateZ(-30px) rotateZ(65deg);
         }
@@ -739,7 +750,7 @@ export default function LoginPage() {
           .is-txr {
             left: 0;
           }
-          
+
           body {
             perspective: none;
           }
@@ -747,24 +758,24 @@ export default function LoginPage() {
       `}</style>
 
       <div className="main">
-        <Toaster 
+        <Toaster
           position="top-right"
           toastOptions={{
             duration: 3000,
             style: {
-              background: '#332E70',
-              color: '#fff',
+              background: "#332E70",
+              color: "#fff",
             },
             success: {
               style: {
-                background: '#2D2A59',
-                border: '1px solid #FF7A59',
+                background: "#2D2A59",
+                border: "1px solid #FF7A59",
               },
             },
             error: {
               style: {
-                background: '#2D2A59',
-                border: '1px solid #FF7A59',
+                background: "#2D2A59",
+                border: "1px solid #FF7A59",
               },
             },
           }}
@@ -778,12 +789,12 @@ export default function LoginPage() {
           <div className="circle circle-2"></div>
           <div className="circle circle-3"></div>
         </div>
-        
+
         <button className="home-button" onClick={goToHome}>
           <Home size={20} />
           <span>Back Home</span>
         </button>
-        
+
         <div
           className={`container a-container ${isSignUp ? "is-txl" : ""}`}
           id="a-container"
@@ -952,8 +963,15 @@ export default function LoginPage() {
                 />
               )}
             </div>
-            
-            <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
+
+            <div
+              style={{
+                display: "flex",
+                width: "100%",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
               <div className="checkbox-container">
                 <Checkbox id="remember" aria-label="Remember me checkbox" />
                 <label htmlFor="remember" className="checkbox-label">
@@ -964,7 +982,7 @@ export default function LoginPage() {
                 Forgot Password?
               </Link>
             </div>
-            
+
             <button
               className="button submit"
               type="submit"
