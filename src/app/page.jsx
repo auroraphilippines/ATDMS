@@ -372,13 +372,12 @@ export default function NotFound() {
                               Current Status
                             </h4>
                             <p className="text-white/70 text-sm">
-                              After careful consideration, the Developers and
-                              staff of Aurora Tourism have decided to
-                              temporarily take the Central Aurora Tourism
-                              Management System offline. We are working on a new
-                              and improved version that will better serve the
-                              needs of our users and the tourism industry in
-                              Aurora Province.
+                              After careful consideration, the Developers have
+                              decided to temporarily take the Central Aurora
+                              Tourism Management System offline. We are working
+                              on a new and improved version that will better
+                              serve the needs of our users and the tourism
+                              industry in Aurora Province.
                             </p>
                           </div>
                           <div className="bg-white/5 p-4 rounded-lg">
