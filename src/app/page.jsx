@@ -1,21 +1,52 @@
 "use client";
-
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import {
   ClipboardCheck,
   ShieldCheck,
-  Users,
+  UsersIcon,
   Award,
   ClipboardList,
   Search,
   BarChart2,
 } from "lucide-react";
+
+function CountUp({ end, duration = 2, suffix = "" }) {
+  const [count, setCount] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
+
+  useEffect(() => {
+    if (hasStarted) return;
+    const timer = setTimeout(() => {
+      setHasStarted(true);
+      const startTime = Date.now();
+      const endTime = startTime + duration * 1000;
+      const updateCount = () => {
+        const now = Date.now();
+        const progress = Math.min((now - startTime) / (duration * 1000), 1);
+        const currentCount = Math.floor(progress * end);
+        setCount(currentCount);
+        if (progress < 1) {
+          requestAnimationFrame(updateCount);
+        }
+      };
+      updateCount();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [end, duration, hasStarted]);
+
+  return (
+    <span>
+      {count}
+      {suffix}
+    </span>
+  );
+}
 
 const images = [
   "/images/bay.png",
@@ -32,18 +63,38 @@ const images = [
 
 function StartupScreen() {
   const [isVisible, setIsVisible] = useState(true);
-  const [isMounted, setIsMounted] = useState(false);
+  const [animationPhase, setAnimationPhase] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-    }, 3000);
-
-    return () => clearTimeout(timer);
+    setMounted(true);
   }, []);
 
-  if (!isMounted) return null;
+  useEffect(() => {
+    if (!mounted) return;
+
+    const phases = [
+      () => setAnimationPhase(1),
+      () => setAnimationPhase(2),
+      () => setAnimationPhase(3),
+      () => setAnimationPhase(4),
+      () => setAnimationPhase(5),
+    ];
+
+    phases.forEach((phase, index) => {
+      setTimeout(phase, index * 600);
+    });
+
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [mounted]);
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <AnimatePresence>
@@ -51,29 +102,161 @@ function StartupScreen() {
         <motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-900"
+          transition={{ duration: 0.8 }}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-blue-50 via-green-50 to-purple-50 overflow-hidden"
         >
+          {/* 3D Floating particles */}
+          {animationPhase >= 3 && (
+            <div className="absolute inset-0">
+              {[...Array(20)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{
+                    opacity: [0, 1, 0],
+                    scale: [0, 1, 0],
+                    x: [0, Math.random() * 400 - 200],
+                    y: [0, Math.random() * 400 - 200],
+                  }}
+                  transition={{
+                    duration: 3,
+                    delay: i * 0.1,
+                    repeat: Number.POSITIVE_INFINITY,
+                    repeatDelay: 2,
+                  }}
+                  className={`absolute w-3 h-3 rounded-full ${
+                    i % 4 === 0
+                      ? "bg-blue-400"
+                      : i % 4 === 1
+                      ? "bg-green-400"
+                      : i % 4 === 2
+                      ? "bg-purple-400"
+                      : "bg-yellow-400"
+                  }`}
+                  style={{
+                    left: "50%",
+                    top: "50%",
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
+            initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 1.2, opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex flex-col items-center justify-center"
+            transition={{ duration: 0.8 }}
+            className="flex flex-col items-center justify-center relative z-10"
           >
-            <Image
-              src="/images/lap.png"
-              alt="CATMS Logo"
-              width={200}
-              height={200}
-              className="mb-8 animate-pulse"
-            />
             <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: "200px" }}
-              transition={{ duration: 2, ease: "easeInOut" }}
-              className="h-1 bg-gradient-to-r from-amber-400 to-indigo-400 rounded-full"
-            />
+              initial={{ scale: 0.8, opacity: 0, rotateY: 0 }}
+              animate={
+                animationPhase >= 1
+                  ? {
+                      scale: animationPhase >= 2 ? [1, 1.1, 1] : 1,
+                      opacity: 1,
+                    }
+                  : {}
+              }
+              transition={{
+                scale: { duration: 1, times: [0, 0.5, 1] },
+                opacity: { duration: 0.6 },
+              }}
+              className="relative mb-8"
+            >
+              <div className="w-48 h-48 bg-gradient-to-br from-blue-400 to-green-500 rounded-full flex items-center justify-center shadow-2xl">
+                <Image
+                  src="/images/lap.png"
+                  alt="ATDMS Logo"
+                  width={120}
+                  height={120}
+                  className="drop-shadow-2xl"
+                />
+              </div>
+              {animationPhase >= 2 && (
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{
+                    scale: [1, 1.5, 1],
+                    opacity: [0.5, 0, 0.5],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "easeInOut",
+                  }}
+                  className="absolute inset-0 border-4 border-blue-400 rounded-full"
+                />
+              )}
+            </motion.div>
+
+            {animationPhase >= 4 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className="text-center mb-6"
+              >
+                <motion.h1
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                  className="text-3xl font-bold text-gray-800 mb-2"
+                >
+                  ATDMS
+                </motion.h1>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.4 }}
+                  className="text-gray-600"
+                >
+                  Central Aurora Tourism Management System
+                </motion.p>
+              </motion.div>
+            )}
+
+            {animationPhase >= 5 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="flex flex-col items-center"
+              >
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: "250px" }}
+                  transition={{ duration: 0.5 }}
+                  className="relative h-3 bg-gray-200 rounded-full overflow-hidden mb-4"
+                >
+                  <motion.div
+                    initial={{ width: "0%" }}
+                    animate={{ width: "100%" }}
+                    transition={{ duration: 2, ease: "easeInOut" }}
+                    className="h-full bg-gradient-to-r from-blue-400 via-green-500 to-purple-500 rounded-full relative"
+                  >
+                    <motion.div
+                      animate={{ x: ["-100%", "100%"] }}
+                      transition={{
+                        duration: 1.5,
+                        repeat: Number.POSITIVE_INFINITY,
+                        ease: "easeInOut",
+                      }}
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                    />
+                  </motion.div>
+                </motion.div>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                  className="text-gray-600 text-sm font-medium"
+                >
+                  Loading Resources
+                </motion.p>
+              </motion.div>
+            )}
           </motion.div>
         </motion.div>
       )}
@@ -81,19 +264,23 @@ function StartupScreen() {
   );
 }
 
-export default function CATMS() {
+export default function ATDMS() {
+  const [mounted, setMounted] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [expandedFAQ, setExpandedFAQ] = useState(null);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
   const [isImageTransitioning, setIsImageTransitioning] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [activeSection, setActiveSection] = useState("home");
-  const [isMounted, setIsMounted] = useState(false);
+
+  // Ensure component is mounted before running client-side effects
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
-    setIsMounted(true);
+    if (!mounted) return;
 
     const handleMouseMove = (e) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
@@ -101,10 +288,10 @@ export default function CATMS() {
 
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [mounted]);
 
   useEffect(() => {
-    if (!isMounted) return;
+    if (!mounted) return;
 
     const interval = setInterval(() => {
       setIsImageTransitioning(true);
@@ -119,24 +306,25 @@ export default function CATMS() {
     };
 
     window.addEventListener("scroll", handleScroll);
+
     return () => {
       clearInterval(interval);
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [isMounted]);
+  }, [mounted]);
 
   useEffect(() => {
-    if (!isMounted) return;
+    if (!mounted) return;
 
     const handleScroll = () => {
       const sections = {
         home: document.querySelector(".hero-section"),
         features: document.querySelector("#features"),
         process: document.querySelector("#process"),
-        faq: document.querySelector("#faq"),
+        contact: document.querySelector("#contact"),
       };
 
-      const scrollPosition = window.scrollY + 100; // Offset for better trigger point
+      const scrollPosition = window.scrollY + 100;
 
       Object.entries(sections).forEach(([key, section]) => {
         if (section) {
@@ -152,7 +340,18 @@ export default function CATMS() {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isMounted]);
+  }, [mounted]);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-green-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading ATDMS...</p>
+        </div>
+      </div>
+    );
+  }
 
   const openVideoModal = () => {
     setIsVideoModalOpen(true);
@@ -160,14 +359,6 @@ export default function CATMS() {
 
   const closeVideoModal = () => {
     setIsVideoModalOpen(false);
-  };
-
-  const toggleFAQ = (index) => {
-    if (expandedFAQ === index) {
-      setExpandedFAQ(null);
-    } else {
-      setExpandedFAQ(index);
-    }
   };
 
   const features = [
@@ -184,7 +375,7 @@ export default function CATMS() {
         "Stay updated with the latest hospitality regulations. Our system adapts to new guidelines, keeping your property compliant and guest-ready. Receive automatic updates on regulatory changes and ensure your inspections meet the highest standards.",
     },
     {
-      icon: Users,
+      icon: UsersIcon,
       title: "Admin Management",
       description:
         "Centralized control for administrators to oversee inspection processes, review submissions, and manage client establishments effectively. Gain insights through detailed reports and analytics to make informed decisions and improve operational efficiency.",
@@ -221,115 +412,12 @@ export default function CATMS() {
     },
   ];
 
-  const faqItems = [
-    {
-      question: "How does the system improve inspection efficiency?",
-      answer:
-        "Our system digitizes the entire inspection process, from scheduling to reporting. This reduces paperwork, eliminates manual data entry, and allows for real-time collaboration, significantly speeding up inspections while improving accuracy and consistency across all rooms and facilities.",
-    },
-    {
-      question:
-        "Can the system be customized for different types of accommodations?",
-      answer:
-        "Yes, our system is highly flexible and can be tailored to various accommodation types, including hotels, resorts, vacation rentals. Customizable checklists and evaluation criteria ensure that inspections are relevant to your specific property type and brand standards.",
-    },
-    {
-      question: "How does the system ensure data security and guest privacy?",
-      answer:
-        "We adhere strictly to the Philippine Data Protection Law to safeguard all information. Our system employs robust encryption and security measures to protect data. Access to sensitive information is tightly controlled based on user roles, and we ensure that all data handling practices comply with the requirements set forth by the Philippine data protection regulations.",
-    },
-    {
-      question: "How does the system help in maintaining brand standards?",
-      answer:
-        "The system includes customizable checklists that reflect your brand standards. It provides detailed reports and actionable insights after each inspection, allowing you to track compliance with brand requirements. The system also offers trend analysis to help identify recurring issues that may affect brand consistency.",
-    },
-    {
-      question: "What kind of support and training do you offer?",
-      answer:
-        "We provide comprehensive onboarding and training for Tourism Officers, Hotel Staff, and Municipalities Inspectors. Our support team is available on a scheduled basis within Monday, Wednesday, Thursday, and Friday to assist with any questions or issues. We also offer regular webinars and updates on best practices in accommodation inspection and quality management.",
-    },
-    {
-      question:
-        "What legal mandates govern tourism data submission in Aurora Province?",
-      answer:
-        "Under Provincial Ordinance No. 473 and Republic Act No. 9593 (Tourism Act of 2009), all accommodation establishments in Aurora Province including Hotels, Resorts, Apartelles, Pension Houses, Tourist Inns, Transient Houses, and similar establishments are required to submit their tourism statistical data to the Provincial Tourism Office for proper implementation and monitoring.",
-    },
-    {
-      question:
-        "How does CATMS address the unique needs of Central Aurora's tourism industry?",
-      answer: (
-        <div className="space-y-4 text-justify">
-          <p>
-            CATMS is specifically designed to meet the unique requirements of
-            Central Aurora's diverse tourism landscape. It incorporates both DOT
-            (Department of Tourism) Standard Regulations and Local Standard
-            Regulations:
-          </p>
-          <ol className="list-decimal pl-5 space-y-2">
-            <li>
-              <span className="font-semibold">DOT Compliance:</span> The system
-              ensures all accommodations adhere to the latest DOT standards,
-              including the National Accommodation Standards for Hotels,
-              Resorts, and Apartment Hotels. It covers crucial areas such as
-              guest rooms, public areas, food and beverage outlets, kitchen and
-              food production areas, and guest services.
-            </li>
-            <li>
-              <span className="font-semibold">Local Regulations:</span> CATMS
-              integrates Central Aurora's specific local ordinances and
-              regulations, such as environmental protection measures for coastal
-              properties and cultural preservation guidelines for heritage
-              sites.
-            </li>
-            <li>
-              <span className="font-semibold">Customized Checklists:</span> The
-              system offers tailored inspection checklists for various
-              accommodation types found in Central Aurora, from beach resorts to
-              mountain lodges, ensuring relevant criteria for each property
-              type.
-            </li>
-            <li>
-              <span className="font-semibold">Seasonal Adaptability:</span> The
-              system accounts for Central Aurora's seasonal tourism patterns,
-              allowing for adjusted inspection schedules and criteria during
-              peak and off-peak seasons.
-            </li>
-            <li>
-              <span className="font-semibold">Local Collaboration:</span> CATMS
-              facilitates seamless cooperation between local government units,
-              property owners, and the Provincial Tourism Office, ensuring a
-              unified approach to maintaining and improving accommodation
-              standards across Central Aurora.
-            </li>
-            <li>
-              <span className="font-semibold">
-                Sustainable Tourism Practices:
-              </span>{" "}
-              In line with both DOT and local initiatives, the system
-              incorporates sustainability metrics, helping properties in Central
-              Aurora to implement and track eco-friendly practices.
-            </li>
-          </ol>
-          <p>
-            By addressing these specific needs, CATMS not only ensures
-            regulatory compliance but also contributes to the overall
-            improvement of Central Aurora's tourism industry, enhancing guest
-            experiences and supporting the region's reputation as a top-tier
-            destination.
-          </p>
-        </div>
-      ),
-    },
-  ];
-
   const scrollToSection = (sectionId) => {
-    if (!isMounted) return;
-
     const element = document.querySelector(
       sectionId === "home" ? ".hero-section" : `#${sectionId}`
     );
     if (element) {
-      const offset = 80; // Adjust this value based on your header height
+      const offset = 80;
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - offset;
 
@@ -340,277 +428,360 @@ export default function CATMS() {
     }
   };
 
-  // Return a simple loading state or null for initial server render
-  if (!isMounted) {
-    return (
-      <div className="min-h-screen flex flex-col bg-[#2D2A59] relative overflow-hidden">
-        <div className="fixed inset-0 bg-[#2B2155]"></div>
-      </div>
-    );
-  }
-
   return (
     <>
       <StartupScreen />
-      <div className="min-h-screen flex flex-col bg-[#2D2A59] relative overflow-hidden">
-        {/* Enhanced dramatic background effect */}
-        <div
-          className="fixed inset-0 pointer-events-none"
-          style={{
-            background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, 
-              rgba(255, 122, 89, 0.2) 0%, 
-              rgba(73, 63, 141, 0.1) 50%, 
-              transparent 100%)`,
-            transition: "background 0.1s ease-out",
-          }}
-        />
-
-        {/* Vertical text elements */}
-        <div className="fixed left-6 top-1/2 -translate-y-1/2 z-10 hidden lg:block">
-          <div className="flex flex-col items-center">
-            <div className="transform -rotate-90 origin-center whitespace-nowrap">
-              <span className="text-white/70 tracking-widest uppercase text-sm font-light mb-24 block">
-                AURORA PROVINCE
-              </span>
-            </div>
-          </div>
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-green-50 relative overflow-hidden">
+        {/* 3D Background Elements */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+          {/* Floating 3D shapes */}
+          <div
+            className="absolute top-20 left-10 w-16 h-16 bg-blue-200 rounded-full opacity-40 animate-bounce"
+            style={{ animationDelay: "0s", animationDuration: "4s" }}
+          ></div>
+          <div
+            className="absolute top-40 right-20 w-12 h-12 bg-green-200 rounded-full opacity-35 animate-bounce"
+            style={{ animationDelay: "1s", animationDuration: "5s" }}
+          ></div>
+          <div
+            className="absolute bottom-40 left-20 w-20 h-20 bg-purple-200 rounded-full opacity-30 animate-bounce"
+            style={{ animationDelay: "2s", animationDuration: "6s" }}
+          ></div>
+          <div
+            className="absolute bottom-20 right-40 w-24 h-24 bg-yellow-200 rounded-full opacity-25 animate-bounce"
+            style={{ animationDelay: "0.5s", animationDuration: "4.5s" }}
+          ></div>
+          <div
+            className="absolute top-1/2 left-1/4 w-8 h-8 bg-pink-200 rounded-full opacity-30 animate-pulse"
+            style={{ animationDelay: "1.5s" }}
+          ></div>
+          <div
+            className="absolute top-1/3 right-1/3 w-14 h-14 bg-indigo-200 rounded-full opacity-25 animate-pulse"
+            style={{ animationDelay: "2.5s" }}
+          ></div>
         </div>
 
-        <div className="fixed right-6 top-1/2 -translate-y-1/2 z-10 hidden lg:block">
-          <div className="flex flex-col items-center">
-            <div className="transform -rotate-90 origin-center whitespace-nowrap">
-              <span className="text-white/70 tracking-widest uppercase text-sm font-light mb-24 block">
-                TOURISM MANAGEMENT
-              </span>
-            </div>
-          </div>
-        </div>
-
+        {/* Header - Updated Navbar without dropdown */}
         <motion.header
           className={`fixed w-full z-50 transition-all duration-300 ${
             isScrolled
-              ? "bg-[#2D2A59]/90 backdrop-blur-xl border-b border-white/10"
-              : "bg-transparent"
+              ? "bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-lg"
+              : "bg-white/90 backdrop-blur-sm"
           }`}
           initial={{ y: -100 }}
           animate={{ y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
+          <div className="container mx-auto px-4 py-3">
+            <div className="flex items-center justify-center">
+              {/* Logo Section - Positioned absolutely to the left */}
               <motion.div
-                className="flex items-center space-x-4"
+                className="absolute left-4 flex items-center space-x-3"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                <Link href="/" className="flex items-center">
-                  <Image
-                    src="/images/lap.png"
-                    alt="CATMS Logo"
-                    width={50}
-                    height={50}
-                    className="hover:scale-105 transition-transform duration-300"
-                  />
+                <Link href="/" className="flex items-center space-x-2">
+                  <div className="relative">
+                    <Image
+                      src="/images/lap.png"
+                      alt="ATDMS Logo"
+                      width={45}
+                      height={45}
+                      className="hover:scale-105 transition-transform duration-300 drop-shadow-lg"
+                    />
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  </div>
+                  <div>
+                    <span className="text-xl font-bold text-gray-800">
+                      ATDMS
+                    </span>
+                    <div className="text-xs text-gray-500 -mt-1">
+                      Tourism Management
+                    </div>
+                  </div>
                 </Link>
               </motion.div>
+
+              {/* Center Navigation - Now truly centered */}
               <motion.nav
-                className="hidden md:block"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
+                className="flex items-center space-x-1 bg-white/80 backdrop-blur-sm rounded-full px-6 py-2 shadow-lg border border-gray-200"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
               >
-                <ul className="flex space-x-8 items-center">
-                  {["home", "features", "process", "faq"].map((section) => (
-                    <li key={section} className="relative">
-                      <button
-                        onClick={() => scrollToSection(section)}
-                        className={`
-                          px-4 
-                          py-2 
-                          text-white 
-                          transition-all
-                          duration-300 
-                          relative 
-                          text-sm
-                          font-medium
-                          uppercase
-                          tracking-wider
-                          hover:text-[#FF7A59]
-                          ${activeSection === section ? "text-[#FF7A59]" : ""}
-                        `}
-                      >
-                        <span className="relative z-10">
-                          {section.charAt(0).toUpperCase() + section.slice(1)}
-                        </span>
-                        {activeSection === section && (
-                          <motion.div
-                            layoutId="activeSection"
-                            className="absolute inset-0 rounded-full -z-10 bg-white/10"
-                            initial={false}
-                            transition={{
-                              type: "spring",
-                              bounce: 0.2,
-                              duration: 0.6,
-                            }}
-                          />
-                        )}
-                        {/* Active indicator dot */}
-                        {activeSection === section && (
-                          <motion.div
-                            layoutId="activeDot"
-                            className="absolute -bottom-2 left-1/2 w-1 h-1 rounded-full transform -translate-x-1/2 bg-[#FF7A59]"
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{
-                              type: "spring",
-                              bounce: 0.2,
-                              duration: 0.6,
-                            }}
-                          />
-                        )}
-                        {/* Hover effect */}
-                        <motion.div
-                          className="absolute bottom-0 left-0 h-[2px] w-full origin-left bg-[#FF7A59]"
-                          initial={{ scaleX: 0 }}
-                          whileHover={{ scaleX: 1 }}
-                          transition={{ duration: 0.3 }}
-                        />
-                      </button>
-                    </li>
-                  ))}
-                  <li className="relative">
-                    <Link
-                      href="/login"
-                      className={`
-                        px-4 
-                        py-2 
-                        text-white 
-                        transition-all
-                        duration-300 
-                        relative 
-                        text-sm
-                        font-medium
-                        uppercase
-                        tracking-wider
-                        hover:text-[#FF7A59]
-                        bg-[#9D4F9A]/30
-                        hover:bg-[#9D4F9A]/50
-                        backdrop-blur-sm
-                        rounded-sm
-                        flex items-center gap-2
-                      `}
-                    >
-                      <span>Login</span>
+                {[
+                  {
+                    id: "home",
+                    label: "Dashboard",
+                    icon: (
                       <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
+                        className="w-4 h-4"
                         fill="none"
                         stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="transition-transform group-hover:translate-x-1"
+                        viewBox="0 0 24 24"
                       >
-                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                        <polyline points="10 17 15 12 10 7"></polyline>
-                        <line x1="15" y1="12" x2="3" y2="12"></line>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                        />
                       </svg>
-                    </Link>
-                  </li>
-                </ul>
+                    ),
+                  },
+                  {
+                    id: "features",
+                    label: "Features",
+                    icon: (
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    ),
+                  },
+                  {
+                    id: "process",
+                    label: "Inspections",
+                    icon: (
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                        />
+                      </svg>
+                    ),
+                  },
+                  {
+                    id: "gallery",
+                    label: "Gallery",
+                    icon: (
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                    ),
+                  },
+                  {
+                    id: "contact",
+                    label: "Support",
+                    icon: (
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    ),
+                  },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => scrollToSection(item.id)}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 relative ${
+                      activeSection === item.id
+                        ? "text-white bg-gradient-to-r from-green-500 to-blue-500 shadow-lg"
+                        : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                    }`}
+                  >
+                    <span
+                      className={`transition-colors duration-300 ${
+                        activeSection === item.id
+                          ? "text-white"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      {item.icon}
+                    </span>
+                    <span>{item.label}</span>
+                  </button>
+                ))}
               </motion.nav>
+
+              {/* Mobile Menu Button - Positioned absolutely to the right */}
+              <div className="absolute right-4 lg:hidden">
+                <button className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all duration-300">
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </motion.header>
 
         <main className="pt-20">
+          {/* Hero Section with 3D elements */}
+          {/* Hero Section - New Clean Design */}
           <section className="hero-section relative min-h-screen flex items-center justify-center overflow-hidden">
-            {/* Main background */}
-            <div className="absolute inset-0 bg-[#2B2155] z-0" />
-
-            {/* 3D Geometric elements */}
-            <div className="absolute inset-0 z-1">
-              {/* Large pink/purple triangular mountain shapes */}
-              <div className="absolute top-0 right-0 w-2/3 h-full">
-                <svg
-                  viewBox="0 0 800 600"
-                  className="w-full h-full"
-                  preserveAspectRatio="xMinYMin slice"
-                >
-                  <path
-                    d="M500,0 L800,0 L800,500 L500,200 Z"
-                    fill="#B65B9C"
-                    opacity="0.6"
-                  />
-                  <path
-                    d="M400,600 L800,600 L600,200 L200,500 Z"
-                    fill="#A85B9C"
-                    opacity="0.7"
-                  />
-                  <path
-                    d="M700,300 L800,100 L800,400 Z"
-                    fill="#C75B9C"
-                    opacity="0.8"
-                  />
-                </svg>
-              </div>
-
-              {/* Small geometric accents */}
-              <div className="absolute top-20 left-20 w-4 h-4 rounded-full bg-white opacity-20"></div>
-              <div className="absolute top-40 left-40 w-2 h-2 rounded-full bg-white opacity-15"></div>
-              <div className="absolute bottom-1/4 left-1/3 w-3 h-3 rounded-full bg-white opacity-10"></div>
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-green-50">
+              <div
+                className="absolute inset-0 opacity-40"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%2310b981' fillOpacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                }}
+              ></div>
             </div>
 
-            {/* Main Content */}
             <div className="container mx-auto px-4 z-10 relative">
-              <div className="flex flex-col md:flex-row items-center">
-                <div className="md:w-1/2 mb-8 md:mb-0">
-                  <div className="relative">
-                    <h1 className="text-8xl md:text-9xl font-black text-white mb-4 leading-tight tracking-tighter">
-                      CATMS
-                      <span className="text-[#FF7A59] absolute text-4xl">
-                        *
-                      </span>
-                    </h1>
-                  </div>
-                  <p className="text-xl text-white/90 mb-8">
-                    Join us for an epic week of hiking, team-building, and
-                    digital detoxing. This system brings your property to life.
-                  </p>
-                  <div className="cta-buttons">
-                    <Button
-                      className="bg-[#FF7A59] text-white hover:bg-[#E55A3A] shadow-lg px-8 py-3 rounded-full"
-                      onClick={openVideoModal}
+              <div className="flex items-center justify-center">
+                <div className="max-w-4xl text-center">
+                  {/* Left Content - now centered */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8 }}
+                    className="space-y-8"
+                  >
+                    <div className="space-y-6">
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.1 }}
+                        className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium"
+                      >
+                        <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                        Tourism Management System
+                      </motion.div>
+
+                      <motion.h1
+                        className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.2 }}
+                      >
+                        Welcome To
+                        <br />
+                        <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                          ATDMS
+                        </span>
+                      </motion.h1>
+
+                      <motion.p
+                        className="text-xl text-gray-600 max-w-lg leading-relaxed"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.4 }}
+                      >
+                        Think of a place, We'll manage it for you. A
+                        comprehensive accommodation inspection management system
+                        that streamlines quality control processes.
+                      </motion.p>
+                    </div>
+
+                    <motion.div
+                      className="flex flex-col sm:flex-row gap-4"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.8, delay: 0.6 }}
                     >
-                      Adventure →
-                    </Button>
-                  </div>
-                </div>
-                <div className="md:w-1/2 relative">
-                  {/* This space intentionally left empty to showcase the geometric background */}
+                      <Link href="/login">
+                        <Button className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-full text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                          Get Started
+                          <svg
+                            className="w-5 h-5 ml-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M13 7l5 5m0 0l-5 5m5-5H6"
+                            />
+                          </svg>
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="outline"
+                        className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 px-8 py-4 rounded-full text-lg font-medium transition-all duration-300 bg-transparent"
+                        onClick={openVideoModal}
+                      >
+                        <svg
+                          className="w-5 h-5 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        Watch Demo
+                      </Button>
+                    </motion.div>
+                  </motion.div>
                 </div>
               </div>
             </div>
           </section>
-
-          <section id="features" className="py-20 relative">
-            <div className="absolute inset-0 bg-[#2D2A59] backdrop-blur-xl" />
+          {/* Features Section with 3D styling */}
+          <section id="features" className="py-20 relative bg-white">
             <div className="container mx-auto px-4 relative z-10">
-              <div className="flex items-center mb-12">
-                <div className="w-16 h-0.5 bg-[#FF7A59] mr-4"></div>
-                <h2 className="text-4xl font-bold text-white">
+              <motion.div
+                className="text-center mb-16"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+              >
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
                   Choose your Adventure
                 </h2>
-                <div className="flex-grow h-0.5 bg-white/10 ml-4"></div>
-                <div className="text-[#FF7A59] font-mono ml-4">
-                  01 / Range of Activities
-                </div>
-              </div>
+                <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                  Discover powerful features designed to streamline your
+                  accommodation inspection process
+                </p>
+              </motion.div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {features.map((feature, index) => (
                   <motion.div
                     key={index}
@@ -620,22 +791,22 @@ export default function CATMS() {
                     viewport={{ once: true }}
                     whileHover={{ scale: 1.02, y: -5 }}
                   >
-                    <Card className="bg-[#332E70] border-none overflow-hidden transition-all duration-300 group">
-                      <CardContent className="p-6">
-                        <div className="text-[#FF7A59] text-3xl font-black mb-6">
-                          0{index + 1}
+                    <Card className="bg-white/80 backdrop-blur-sm border border-gray-200 shadow-xl hover:shadow-2xl transition-all duration-300 group h-full rounded-3xl">
+                      <CardContent className="p-6 h-full flex flex-col">
+                        <div className="bg-gradient-to-br from-green-100 to-blue-100 p-4 rounded-2xl mb-6 inline-block">
+                          <feature.icon size={32} className="text-green-600" />
                         </div>
-                        <div className="bg-[#2D2A59] p-4 rounded-lg mb-6 inline-block">
-                          <feature.icon size={32} className="text-[#FF7A59]" />
-                        </div>
-                        <h3 className="text-2xl font-bold mb-3 text-white">
+                        <h3 className="text-xl font-bold mb-3 text-gray-900">
                           {feature.title}
                         </h3>
-                        <p className="text-white/70 text-sm">
+                        <p className="text-gray-600 text-sm flex-grow mb-6">
                           {feature.description}
                         </p>
-                        <Button className="mt-6 bg-[#FF7A59] text-white hover:bg-[#E55A3A] rounded-full">
-                          Explore
+                        <Button
+                          variant="outline"
+                          className="border-green-200 text-green-600 hover:bg-green-50 rounded-full w-full bg-transparent"
+                        >
+                          Learn More
                         </Button>
                       </CardContent>
                     </Card>
@@ -645,19 +816,27 @@ export default function CATMS() {
             </div>
           </section>
 
-          <section id="process" className="py-20 relative">
-            <div className="absolute inset-0 bg-[#2D2A59] backdrop-blur-xl" />
+          {/* Process Section with 3D styling */}
+          <section
+            id="process"
+            className="py-20 relative bg-gradient-to-br from-blue-50 to-green-50"
+          >
             <div className="container mx-auto px-4 relative z-10">
-              <div className="flex items-center mb-12">
-                <div className="w-16 h-0.5 bg-[#FF7A59] mr-4"></div>
-                <h2 className="text-4xl font-bold text-white">
+              <motion.div
+                className="text-center mb-16"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+              >
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
                   Inspection Process
                 </h2>
-                <div className="flex-grow h-0.5 bg-white/10 ml-4"></div>
-                <div className="text-[#FF7A59] font-mono ml-4">
-                  02 / How It Works
-                </div>
-              </div>
+                <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                  A streamlined three-step process to ensure quality and
+                  compliance
+                </p>
+              </motion.div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {inspectionSteps.map((step, index) => (
@@ -669,22 +848,25 @@ export default function CATMS() {
                     viewport={{ once: true }}
                     whileHover={{ scale: 1.02, y: -5 }}
                   >
-                    <Card className="bg-[#332E70] border-none overflow-hidden transition-all duration-300 group h-full">
+                    <Card className="bg-white/80 backdrop-blur-sm border border-gray-200 shadow-xl hover:shadow-2xl transition-all duration-300 group h-full rounded-3xl">
                       <CardContent className="p-6 h-full flex flex-col">
-                        <div className="text-[#FF7A59] text-3xl font-black mb-6">
+                        <div className="text-green-600 text-2xl font-bold mb-4">
                           0{index + 1}
                         </div>
-                        <div className="bg-[#2D2A59] p-4 rounded-lg mb-6 inline-block">
-                          <step.icon size={32} className="text-[#FF7A59]" />
+                        <div className="bg-gradient-to-br from-blue-100 to-purple-100 p-4 rounded-2xl mb-6 inline-block">
+                          <step.icon size={32} className="text-blue-600" />
                         </div>
-                        <h3 className="text-2xl font-bold mb-3 text-white">
+                        <h3 className="text-xl font-bold mb-3 text-gray-900">
                           {step.title}
                         </h3>
-                        <p className="text-white/70 text-sm flex-grow">
+                        <p className="text-gray-600 text-sm flex-grow mb-6">
                           {step.description}
                         </p>
-                        <Button className="mt-6 bg-[#FF7A59] text-white hover:bg-[#E55A3A] rounded-full">
-                          Explore
+                        <Button
+                          variant="outline"
+                          className="border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full w-full bg-transparent"
+                        >
+                          Learn More
                         </Button>
                       </CardContent>
                     </Card>
@@ -694,132 +876,589 @@ export default function CATMS() {
             </div>
           </section>
 
-          <section id="gallery" className="py-20 relative">
-            <div className="absolute inset-0 bg-[#2D2A59] backdrop-blur-xl" />
+          {/* Gallery Section with 3D styling */}
+          <section
+            id="gallery"
+            className="py-20 relative overflow-hidden bg-gradient-to-br from-white to-blue-50"
+          >
             <div className="container mx-auto px-4 relative z-10">
-              <div className="flex items-center mb-12">
-                <div className="w-16 h-0.5 bg-[#FF7A59] mr-4"></div>
-                <h2 className="text-4xl font-bold text-white">
-                  Browse our Gallery
+              <motion.div
+                className="text-center mb-16"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+              >
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                  Property Gallery
                 </h2>
-                <div className="flex-grow h-0.5 bg-white/10 ml-4"></div>
-                <div className="text-[#FF7A59] font-mono ml-4">
-                  03 / Visual Showcase
-                </div>
+                <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                  Explore the beautiful accommodations and tourism destinations
+                  managed through our ATDMS platform
+                </p>
+              </motion.div>
+
+              {/* Gallery Categories with 3D buttons */}
+              <motion.div
+                className="flex flex-wrap justify-center gap-4 mb-12"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+              >
+                {["All", "Resorts", "Hotels", "Beaches", "Restaurants"].map(
+                  (category, index) => (
+                    <motion.button
+                      key={category}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                      viewport={{ once: true }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={`px-6 py-3 rounded-full font-medium transition-all duration-300 shadow-lg ${
+                        index === 0
+                          ? "bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-xl"
+                          : "bg-white text-gray-600 border border-gray-300 hover:bg-green-50 hover:border-green-300"
+                      }`}
+                    >
+                      {category}
+                    </motion.button>
+                  )
+                )}
+              </motion.div>
+
+              {/* Main Gallery Grid with 3D cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+                {[
+                  {
+                    src: "/images/bay.png",
+                    title: "Dingalan Bay",
+                    category: "Beaches",
+                    description: "Pristine waters and scenic views",
+                  },
+                  {
+                    src: "/images/costa.png",
+                    title: "Costa Pacifica",
+                    category: "Resorts",
+                    description: "Luxury beachfront resort",
+                  },
+                  {
+                    src: "/images/resort.jpg",
+                    title: "Aurora Resort",
+                    category: "Resorts",
+                    description: "Family-friendly accommodation",
+                  },
+                  {
+                    src: "/images/casa.png",
+                    title: "Casa Esperanza",
+                    category: "Hotels",
+                    description: "Boutique hotel experience",
+                  },
+                  {
+                    src: "/images/baler.png",
+                    title: "Baler Coastline",
+                    category: "Beaches",
+                    description: "Famous surfing destination",
+                  },
+                  {
+                    src: "/images/l-sirene-boutique-resort.png",
+                    title: "L'Sirene Boutique Resort",
+                    category: "Resorts",
+                    description: "Elegant boutique accommodation",
+                  },
+                  {
+                    src: "/images/playa-azul-baler.png",
+                    title: "Playa Azul Baler",
+                    category: "Hotels",
+                    description: "Beachfront hotel with modern amenities",
+                  },
+                  {
+                    src: "/images/Riverstone.png",
+                    title: "Riverstone Resort",
+                    category: "Resorts",
+                    description: "Riverside luxury resort",
+                  },
+                  {
+                    src: "/images/m.png",
+                    title: "Marina Restaurant",
+                    category: "Restaurants",
+                    description: "Fine dining with ocean views",
+                  },
+                  {
+                    src: "/images/caption.png",
+                    title: "Captain's Lodge",
+                    category: "Hotels",
+                    description: "Nautical-themed accommodation",
+                  },
+                ].map((item, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    whileHover={{ scale: 1.02, y: -5 }}
+                    className="group cursor-pointer"
+                  >
+                    <Card className="bg-white/80 backdrop-blur-sm border border-gray-200 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden h-full rounded-3xl">
+                      <div className="relative overflow-hidden">
+                        <Image
+                          src={item.src || "/placeholder.svg"}
+                          alt={item.title}
+                          width={400}
+                          height={300}
+                          className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <span className="inline-block px-3 py-1 bg-green-500 text-xs rounded-full mb-2">
+                            {item.category}
+                          </span>
+                        </div>
+                      </div>
+                      <CardContent className="p-4">
+                        <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-green-600 transition-colors duration-300">
+                          {item.title}
+                        </h3>
+                        <p className="text-gray-600 text-sm">
+                          {item.description}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="relative rounded-xl overflow-hidden h-[500px]">
-                  <Image
-                    src="/images/caption.png"
-                    alt="Gallery image"
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#2D2A59] to-transparent"></div>
-                  <div className="absolute bottom-0 left-0 p-8">
-                    <h3 className="text-3xl font-bold text-white mb-2">
-                      Baler Solitude
+              {/* Featured Properties with 3D styling */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+                className="mb-12"
+              >
+                <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
+                  Featured Properties
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className="relative group cursor-pointer"
+                  >
+                    <Card className="bg-white/80 backdrop-blur-sm border border-gray-200 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden rounded-3xl">
+                      <div className="relative">
+                        <Image
+                          src="/images/costa.png"
+                          alt="Costa Pacifica Resort"
+                          width={600}
+                          height={400}
+                          className="w-full h-64 object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                        <div className="absolute bottom-6 left-6 right-6 text-white">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="px-3 py-1 bg-green-500 text-sm rounded-full">
+                              5★ Rating
+                            </span>
+                            <span className="px-3 py-1 bg-blue-500 text-sm rounded-full">
+                              Premium Resort
+                            </span>
+                          </div>
+                          <h4 className="text-2xl font-bold mb-2">
+                            Costa Pacifica Resort
+                          </h4>
+                          <p className="text-gray-200">
+                            Luxury beachfront resort with world-class amenities
+                            and stunning ocean views
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  </motion.div>
+
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className="relative group cursor-pointer"
+                  >
+                    <Card className="bg-white/80 backdrop-blur-sm border border-gray-200 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden rounded-3xl">
+                      <div className="relative">
+                        <Image
+                          src="/images/baler.png"
+                          alt="Baler Surfing Beach"
+                          width={600}
+                          height={400}
+                          className="w-full h-64 object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                        <div className="absolute bottom-6 left-6 right-6 text-white">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="px-3 py-1 bg-orange-500 text-sm rounded-full">
+                              Surfing Paradise
+                            </span>
+                            <span className="px-3 py-1 bg-purple-500 text-sm rounded-full">
+                              Adventure
+                            </span>
+                          </div>
+                          <h4 className="text-2xl font-bold mb-2">
+                            Baler Surfing Beach
+                          </h4>
+                          <p className="text-gray-200">
+                            Famous surfing destination with perfect waves and
+                            beautiful coastal scenery
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  </motion.div>
+                </div>
+              </motion.div>
+
+              {/* Gallery Statistics with 3D styling */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+              >
+                <Card className="bg-white/80 backdrop-blur-sm border border-gray-200 shadow-xl rounded-3xl">
+                  <CardContent className="p-8">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+                      Gallery Highlights
                     </h3>
-                    <p className="text-white/70">2023</p>
-                    <Button className="mt-4 bg-[#FF7A59] text-white hover:bg-[#E55A3A] rounded-full">
-                      Explore Photo
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="bg-[#332E70] rounded-xl p-8">
-                  <div className="grid grid-cols-2 gap-4 h-full">
-                    <div>
-                      <h4 className="text-xl font-bold text-white mb-4">
-                        Photographer
-                      </h4>
-                      <p className="text-white/70 text-sm">
-                        The DOT tourism team has taken detailed shots of many
-                        destinations across Aurora province.
-                      </p>
-
-                      <h4 className="text-xl font-bold text-white mb-4 mt-8">
-                        Year
-                      </h4>
-                      <p className="text-white/70 text-sm">2023</p>
-
-                      <h4 className="text-xl font-bold text-white mb-4 mt-8">
-                        Description
-                      </h4>
-                      <p className="text-white/70 text-sm">
-                        An inspiring hotel inspection system based on natural
-                        elements and clean design.
-                      </p>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                      {[
+                        {
+                          number: "150+",
+                          label: "Properties Featured",
+                          icon: "🏨",
+                        },
+                        {
+                          number: "25+",
+                          label: "Beach Destinations",
+                          icon: "🏖️",
+                        },
+                        { number: "50+", label: "Resort Partners", icon: "🌴" },
+                        { number: "100+", label: "Dining Venues", icon: "🍽️" },
+                      ].map((stat, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.5, delay: index * 0.1 }}
+                          viewport={{ once: true }}
+                          whileHover={{ scale: 1.05 }}
+                          className="text-center"
+                        >
+                          <div className="text-4xl mb-3">{stat.icon}</div>
+                          <div className="text-2xl font-bold text-gray-900 mb-1">
+                            {stat.number}
+                          </div>
+                          <div className="text-gray-600 text-sm">
+                            {stat.label}
+                          </div>
+                        </motion.div>
+                      ))}
                     </div>
-
-                    <div className="flex items-end">
-                      <Button className="w-full bg-[#FF7A59] text-white hover:bg-[#E55A3A] rounded-full h-12">
-                        View Full Gallery
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             </div>
           </section>
 
-          <section id="faq" className="py-20 relative">
-            <div className="absolute inset-0 bg-[#2D2A59] backdrop-blur-xl" />
+          {/* Contact Section with 3D styling */}
+          <section
+            id="contact"
+            className="py-20 relative bg-gradient-to-br from-blue-50 to-white"
+          >
             <div className="container mx-auto px-4 relative z-10">
-              <div className="flex items-center mb-12">
-                <div className="w-16 h-0.5 bg-[#FF7A59] mr-4"></div>
-                <h2 className="text-4xl font-bold text-white">
-                  Frequently Asked Questions
+              <motion.div
+                className="text-center mb-16"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+              >
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                  Contact
                 </h2>
-                <div className="flex-grow h-0.5 bg-white/10 ml-4"></div>
-                <div className="text-[#FF7A59] font-mono ml-4">
-                  04 / Help Center
-                </div>
-              </div>
+                <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                  Experiencing technical issues? Our support team is here to
+                  help resolve any unexpected errors quickly
+                </p>
+              </motion.div>
 
-              <div className="space-y-4 w-full max-w-3xl mx-auto">
-                {faqItems.map((item, index) => (
-                  <Card
-                    key={index}
-                    className="overflow-hidden bg-[#332E70] border-none hover:border-[#FF7A59]/50 transition-all duration-300"
-                  >
-                    <CardContent className="p-0">
-                      <button
-                        className="flex justify-between items-center w-full p-4 text-left focus:outline-none focus:ring-2 focus:ring-[#FF7A59]/50 hover:bg-[#3D3884] transition-colors duration-300"
-                        onClick={() => toggleFAQ(index)}
-                      >
-                        <span className="text-lg font-semibold text-white group-hover:text-[#FF7A59]">
-                          {item.question}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8 }}
+                  viewport={{ once: true }}
+                  className="space-y-8"
+                >
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                      Technical Support
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                          <MapPin className="w-6 h-6 text-red-600" />
+                        </div>
+                        <span className="text-gray-600">
+                          Aurora Provincial Tourism Office, Baler, Aurora
                         </span>
-                        {expandedFAQ === index ? (
-                          <ChevronUp className="h-5 w-5 text-[#FF7A59]" />
-                        ) : (
-                          <ChevronDown className="h-5 w-5 text-[#FF7A59]" />
-                        )}
-                      </button>
-                      <AnimatePresence>
-                        {expandedFAQ === index && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="px-4 pb-4"
-                          >
-                            <div className="text-white/70">{item.answer}</div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                          <Phone className="w-6 h-6 text-red-600" />
+                        </div>
+                        <span className="text-gray-600">
+                          +63 (042) 209-2351 (Emergency Hotline)
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                          <Mail className="w-6 h-6 text-red-600" />
+                        </div>
+                        <span className="text-gray-600">
+                          support@atdms.aurora.gov.ph
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                          <Clock className="w-6 h-6 text-red-600" />
+                        </div>
+                        <span className="text-gray-600">
+                          24/7 Technical Support Available
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                      Support Hours
+                    </h3>
+                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-l-4 border-red-500">
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Critical Issues</span>
+                          <span className="text-red-600 font-medium">
+                            24/7 Available
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">General Support</span>
+                          <span className="text-gray-900 font-medium">
+                            8:00 AM - 8:00 PM
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Weekend Support</span>
+                          <span className="text-gray-900 font-medium">
+                            9:00 AM - 5:00 PM
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                      Common Error Solutions
+                    </h3>
+                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
+                      <div className="space-y-3">
+                        <div className="flex items-start space-x-3">
+                          <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              Login Issues
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              Clear browser cache and try again
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              Upload Failures
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              Check file size and internet connection
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              System Timeout
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              Refresh page and log in again
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8 }}
+                  viewport={{ once: true }}
+                >
+                  <Card className="bg-white/80 backdrop-blur-sm shadow-xl border-l-4 border-red-500 rounded-3xl">
+                    <CardContent className="p-8">
+                      <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                        Report an Issue
+                      </h3>
+                      <form
+                        className="space-y-6"
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          alert(
+                            "Error report submitted successfully! Our technical team will contact you within 2 hours."
+                          );
+                        }}
+                      >
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              First Name
+                            </label>
+                            <input
+                              type="text"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                              placeholder="Your first name"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Last Name
+                            </label>
+                            <input
+                              type="text"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                              placeholder="Your last name"
+                              required
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Email
+                          </label>
+                          <input
+                            type="email"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            placeholder="your.email@example.com"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Error Type
+                          </label>
+                          <select className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                            <option value="">Select error type</option>
+                            <option value="login">
+                              Login/Authentication Error
+                            </option>
+                            <option value="upload">File Upload Error</option>
+                            <option value="system">System Crash/Timeout</option>
+                            <option value="data">Data Loss/Corruption</option>
+                            <option value="performance">
+                              Performance Issues
+                            </option>
+                            <option value="other">Other Technical Issue</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Error Description
+                          </label>
+                          <textarea
+                            rows={4}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            placeholder="Please describe the error in detail, including what you were doing when it occurred..."
+                            required
+                          ></textarea>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Priority Level
+                          </label>
+                          <div className="flex space-x-4">
+                            <label className="flex items-center">
+                              <input
+                                type="radio"
+                                name="priority"
+                                value="low"
+                                className="mr-2"
+                              />
+                              <span className="text-sm text-gray-600">Low</span>
+                            </label>
+                            <label className="flex items-center">
+                              <input
+                                type="radio"
+                                name="priority"
+                                value="medium"
+                                className="mr-2"
+                                defaultChecked
+                              />
+                              <span className="text-sm text-gray-600">
+                                Medium
+                              </span>
+                            </label>
+                            <label className="flex items-center">
+                              <input
+                                type="radio"
+                                name="priority"
+                                value="high"
+                                className="mr-2"
+                              />
+                              <span className="text-sm text-red-600 font-medium">
+                                High
+                              </span>
+                            </label>
+                            <label className="flex items-center">
+                              <input
+                                type="radio"
+                                name="priority"
+                                value="critical"
+                                className="mr-2"
+                              />
+                              <span className="text-sm text-red-700 font-bold">
+                                Critical
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                        <Button
+                          type="submit"
+                          className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl text-lg font-medium"
+                        >
+                          Submit Error Report
+                        </Button>
+                      </form>
                     </CardContent>
                   </Card>
-                ))}
+                </motion.div>
               </div>
             </div>
           </section>
         </main>
 
-        <footer className="bg-[#241F4B] text-white py-12 relative border-t border-white/10">
+        {/* Footer with 3D styling */}
+        <footer className="bg-gradient-to-br from-gray-800 to-gray-900 text-white py-12 relative border-t border-gray-700">
           <div className="container mx-auto px-4 relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <motion.div
@@ -828,58 +1467,72 @@ export default function CATMS() {
                 transition={{ duration: 0.5 }}
                 viewport={{ once: true }}
               >
-                <h3 className="text-lg font-semibold mb-4">
+                <h3 className="text-lg font-semibold mb-4 text-white">
                   About Central Aurora Tourism Management System
                 </h3>
-                <p className="text-sm text-gray-300">
-                  CATMS is the leading accommodation inspection management
+                <p className="text-sm text-gray-300 mb-6">
+                  ATDMS is the leading accommodation inspection management
                   system, streamlining quality control processes for hotels,
                   resorts, and vacation rentals worldwide.
                 </p>
-                <div className="flex space-x-4 mt-4">
+                <div className="flex space-x-4">
                   <Image
                     src="/images/DOT.png"
                     alt="DOT"
-                    width={80}
-                    height={80}
+                    width={60}
+                    height={60}
                     className="object-contain hover:scale-105 transition-transform duration-300"
                   />
                   <Image
                     src="/images/lap.png"
                     alt="AURORA"
-                    width={80}
-                    height={80}
+                    width={60}
+                    height={60}
                     className="object-contain hover:scale-105 transition-transform duration-300"
                   />
                   <Image
-                    src="/images/love philippines.png"
+                    src="/images/bgaurora.png"
                     alt="LOVE PHILIPPINES"
-                    width={200}
-                    height={200}
+                    width={120}
+                    height={60}
                     className="object-contain hover:scale-105 transition-transform duration-300"
                   />
                 </div>
               </motion.div>
               <div>
-                <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+                <h3 className="text-lg font-semibold mb-4 text-white">
+                  Quick Links
+                </h3>
                 <ul className="space-y-2">
                   <li>
-                    <Link href="#features" className="text-sm hover:underline">
+                    <Link
+                      href="#features"
+                      className="text-sm hover:text-green-400 transition-colors text-gray-300"
+                    >
                       Features
                     </Link>
                   </li>
                   <li>
-                    <Link href="#process" className="text-sm hover:underline">
+                    <Link
+                      href="#process"
+                      className="text-sm hover:text-green-400 transition-colors text-gray-300"
+                    >
                       Our Process
                     </Link>
                   </li>
                   <li>
-                    <Link href="#faq" className="text-sm hover:underline">
-                      FAQ
+                    <Link
+                      href="#contact"
+                      className="text-sm hover:text-green-400 transition-colors text-gray-300"
+                    >
+                      Contact Us
                     </Link>
                   </li>
                   <li>
-                    <Link href="/privacy" className="text-sm hover:underline">
+                    <Link
+                      href="/privacy"
+                      className="text-sm hover:text-green-400 transition-colors text-gray-300"
+                    >
                       Privacy Policy
                     </Link>
                   </li>
@@ -888,12 +1541,12 @@ export default function CATMS() {
                       href="https://beta.tourism.gov.ph/accreditations/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm hover:underline flex items-center gap-1 group"
+                      className="text-sm hover:text-green-400 transition-colors flex items-center gap-1 group text-gray-300"
                     >
                       DOT Accreditation Portal
                       <svg
                         className="w-4 h-4 inline transition-transform group-hover:translate-x-0.5"
-                        fill="true"
+                        fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                         xmlns="http://www.w3.org/2000/svg"
@@ -910,26 +1563,36 @@ export default function CATMS() {
                 </ul>
               </div>
               <div>
-                <h3 className="text-lg font-semibold mb-4">
+                <h3 className="text-lg font-semibold mb-4 text-white">
                   Contact Information
                 </h3>
-                <p className="text-sm">123 Hospitality Avenue, Global City</p>
-                <p className="text-sm">Phone: (123) 456-7890</p>
-                <p className="text-sm">Email: auroratourismdev@outlook.com</p>
+                <p className="text-sm text-gray-300">
+                  Aurora Provincial Tourism Office
+                </p>
+                <p className="text-sm text-gray-300">
+                  Baler, Aurora, Philippines
+                </p>
+                <p className="text-sm text-gray-300">
+                  Phone: +63 (042) 209-2351
+                </p>
+                <p className="text-sm text-gray-300">
+                  Email: auroratourismdev@outlook.com
+                </p>
               </div>
             </div>
             <div className="mt-8 pt-8 border-t border-gray-700 text-center">
-              <p className="text-sm">
-                &copy; {new Date().getFullYear()} CATMS All rights reserved.
+              <p className="text-sm text-gray-400">
+                &copy; {new Date().getFullYear()} ATDMS All rights reserved.
                 Develop by クリスチャン ジョセフ マリグメン.
               </p>
             </div>
           </div>
         </footer>
 
+        {/* Video Modal */}
         {isVideoModalOpen && (
           <motion.div
-            className="fixed inset-0 bg-black/90 backdrop-blur-xl z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -940,7 +1603,7 @@ export default function CATMS() {
             }}
           >
             <motion.div
-              className="relative w-full max-w-4xl bg-white/20 backdrop-blur-xl rounded-lg shadow-lg border border-white/30"
+              className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -949,7 +1612,7 @@ export default function CATMS() {
                 <video
                   src="/videos/demo.mp4"
                   controls
-                  className="w-full h-full rounded-lg"
+                  className="w-full h-full rounded-2xl"
                   title="Demo Video"
                 >
                   Your browser does not support the video tag.
