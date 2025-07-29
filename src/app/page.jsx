@@ -72,7 +72,6 @@ function StartupScreen() {
 
   useEffect(() => {
     if (!mounted) return;
-
     const phases = [
       () => setAnimationPhase(1),
       () => setAnimationPhase(2),
@@ -80,15 +79,12 @@ function StartupScreen() {
       () => setAnimationPhase(4),
       () => setAnimationPhase(5),
     ];
-
     phases.forEach((phase, index) => {
       setTimeout(phase, index * 600);
     });
-
     const timer = setTimeout(() => {
       setIsVisible(false);
     }, 4000);
-
     return () => clearTimeout(timer);
   }, [mounted]);
 
@@ -103,120 +99,84 @@ function StartupScreen() {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-blue-50 via-green-50 to-purple-50 overflow-hidden"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden"
         >
-          {/* 3D Floating particles */}
-          {animationPhase >= 3 && (
+          {/* Floating Orbs */}
+          {animationPhase >= 2 && (
             <div className="absolute inset-0">
-              {[...Array(20)].map((_, i) => (
+              {[...Array(12)].map((_, i) => (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{
-                    opacity: [0, 1, 0],
+                    opacity: [0, 0.6, 0],
                     scale: [0, 1, 0],
-                    x: [0, Math.random() * 400 - 200],
-                    y: [0, Math.random() * 400 - 200],
+                    x: [0, Math.random() * 800 - 400],
+                    y: [0, Math.random() * 600 - 300],
                   }}
                   transition={{
-                    duration: 3,
-                    delay: i * 0.1,
+                    duration: 4,
+                    delay: i * 0.2,
                     repeat: Number.POSITIVE_INFINITY,
-                    repeatDelay: 2,
+                    repeatDelay: 1,
+                    ease: "easeInOut",
                   }}
-                  className={`absolute w-3 h-3 rounded-full ${
-                    i % 4 === 0
-                      ? "bg-blue-400"
-                      : i % 4 === 1
-                      ? "bg-green-400"
-                      : i % 4 === 2
-                      ? "bg-purple-400"
-                      : "bg-yellow-400"
-                  }`}
+                  className="absolute w-4 h-4 rounded-full"
                   style={{
+                    background: `linear-gradient(45deg, ${
+                      i % 3 === 0
+                        ? "#3b82f6, #8b5cf6"
+                        : i % 3 === 1
+                        ? "#10b981, #06b6d4"
+                        : "#f59e0b, #ef4444"
+                    })`,
                     left: "50%",
                     top: "50%",
+                    boxShadow: "0 0 20px rgba(59, 130, 246, 0.5)",
                   }}
                 />
               ))}
             </div>
           )}
 
+          {/* Main Logo Container */}
           <motion.div
-            initial={{ scale: 0.5, opacity: 0 }}
+            initial={{ scale: 0.3, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 1.2, opacity: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
             className="flex flex-col items-center justify-center relative z-10"
           >
+            {/* Simple Logo */}
             <motion.div
-              initial={{ scale: 0.8, opacity: 0, rotateY: 0 }}
+              initial={{ scale: 0.5, opacity: 0 }}
               animate={
                 animationPhase >= 1
                   ? {
-                      scale: animationPhase >= 2 ? [1, 1.1, 1] : 1,
+                      scale: 1,
                       opacity: 1,
                     }
                   : {}
               }
               transition={{
-                scale: { duration: 1, times: [0, 0.5, 1] },
-                opacity: { duration: 0.6 },
+                duration: 0.8,
+                ease: "easeOut",
               }}
               className="relative mb-8"
             >
-              <div className="w-48 h-48 bg-gradient-to-br from-blue-400 to-green-500 rounded-full flex items-center justify-center shadow-2xl">
+              {/* Simple Logo Container */}
+              <div className="relative w-48 h-48 bg-white rounded-full flex items-center justify-center shadow-2xl border-4 border-slate-300">
                 <Image
                   src="/images/lap.png"
                   alt="ATDMS Logo"
                   width={120}
                   height={120}
-                  className="drop-shadow-2xl"
+                  className="drop-shadow-lg"
                 />
               </div>
-              {animationPhase >= 2 && (
-                <motion.div
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{
-                    scale: [1, 1.5, 1],
-                    opacity: [0.5, 0, 0.5],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Number.POSITIVE_INFINITY,
-                    ease: "easeInOut",
-                  }}
-                  className="absolute inset-0 border-4 border-blue-400 rounded-full"
-                />
-              )}
             </motion.div>
 
-            {animationPhase >= 4 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-                className="text-center mb-6"
-              >
-                <motion.h1
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.2 }}
-                  className="text-3xl font-bold text-gray-800 mb-2"
-                >
-                  ATDMS
-                </motion.h1>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.8, delay: 0.4 }}
-                  className="text-gray-600"
-                >
-                  Central Aurora Tourism Management System
-                </motion.p>
-              </motion.div>
-            )}
-
+            {/* Loading Bar */}
             {animationPhase >= 5 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -226,24 +186,31 @@ function StartupScreen() {
               >
                 <motion.div
                   initial={{ width: 0 }}
-                  animate={{ width: "250px" }}
+                  animate={{ width: "300px" }}
                   transition={{ duration: 0.5 }}
-                  className="relative h-3 bg-gray-200 rounded-full overflow-hidden mb-4"
+                  className="relative h-2 bg-slate-800 rounded-full overflow-hidden mb-4 border border-slate-600"
                 >
                   <motion.div
                     initial={{ width: "0%" }}
                     animate={{ width: "100%" }}
                     transition={{ duration: 2, ease: "easeInOut" }}
-                    className="h-full bg-gradient-to-r from-blue-400 via-green-500 to-purple-500 rounded-full relative"
+                    className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 rounded-full relative"
+                    style={{
+                      boxShadow: "0 0 20px rgba(59, 130, 246, 0.8)",
+                    }}
                   >
+                    {/* Shimmer Effect */}
                     <motion.div
-                      animate={{ x: ["-100%", "100%"] }}
+                      animate={{ x: ["-100%", "200%"] }}
                       transition={{
                         duration: 1.5,
                         repeat: Number.POSITIVE_INFINITY,
                         ease: "easeInOut",
                       }}
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                      style={{
+                        transform: "skewX(-20deg)",
+                      }}
                     />
                   </motion.div>
                 </motion.div>
@@ -251,9 +218,9 @@ function StartupScreen() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.8, delay: 0.3 }}
-                  className="text-gray-600 text-sm font-medium"
+                  className="text-slate-400 text-sm font-medium"
                 >
-                  Loading Resources
+                  Initializing System...
                 </motion.p>
               </motion.div>
             )}
@@ -281,18 +248,15 @@ export default function ATDMS() {
 
   useEffect(() => {
     if (!mounted) return;
-
     const handleMouseMove = (e) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
-
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [mounted]);
 
   useEffect(() => {
     if (!mounted) return;
-
     const interval = setInterval(() => {
       setIsImageTransitioning(true);
       setTimeout(() => {
@@ -306,7 +270,6 @@ export default function ATDMS() {
     };
 
     window.addEventListener("scroll", handleScroll);
-
     return () => {
       clearInterval(interval);
       window.removeEventListener("scroll", handleScroll);
@@ -315,7 +278,6 @@ export default function ATDMS() {
 
   useEffect(() => {
     if (!mounted) return;
-
     const handleScroll = () => {
       const sections = {
         home: document.querySelector(".hero-section"),
@@ -323,21 +285,17 @@ export default function ATDMS() {
         process: document.querySelector("#process"),
         contact: document.querySelector("#contact"),
       };
-
       const scrollPosition = window.scrollY + 100;
-
       Object.entries(sections).forEach(([key, section]) => {
         if (section) {
           const sectionTop = section.offsetTop;
           const sectionBottom = sectionTop + section.offsetHeight;
-
           if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
             setActiveSection(key);
           }
         }
       });
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [mounted]);
@@ -420,7 +378,6 @@ export default function ATDMS() {
       const offset = 80;
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - offset;
-
       window.scrollTo({
         top: offsetPosition,
         behavior: "smooth",
@@ -665,7 +622,6 @@ export default function ATDMS() {
                 }}
               ></div>
             </div>
-
             <div className="container mx-auto px-4 z-10 relative">
               <div className="flex items-center justify-center">
                 <div className="max-w-4xl text-center">
@@ -686,7 +642,6 @@ export default function ATDMS() {
                         <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
                         Tourism Management System
                       </motion.div>
-
                       <motion.h1
                         className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight"
                         initial={{ opacity: 0, y: 20 }}
@@ -699,7 +654,6 @@ export default function ATDMS() {
                           ATDMS
                         </span>
                       </motion.h1>
-
                       <motion.p
                         className="text-xl text-gray-600 max-w-lg leading-relaxed"
                         initial={{ opacity: 0, y: 20 }}
@@ -711,7 +665,6 @@ export default function ATDMS() {
                         that streamlines quality control processes.
                       </motion.p>
                     </div>
-
                     <motion.div
                       className="flex flex-col sm:flex-row gap-4"
                       initial={{ opacity: 0, y: 20 }}
@@ -762,6 +715,7 @@ export default function ATDMS() {
               </div>
             </div>
           </section>
+
           {/* Features Section with 3D styling */}
           <section id="features" className="py-20 relative bg-white">
             <div className="container mx-auto px-4 relative z-10">
@@ -780,7 +734,6 @@ export default function ATDMS() {
                   accommodation inspection process
                 </p>
               </motion.div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {features.map((feature, index) => (
                   <motion.div
@@ -837,7 +790,6 @@ export default function ATDMS() {
                   compliance
                 </p>
               </motion.div>
-
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {inspectionSteps.map((step, index) => (
                   <motion.div
@@ -1076,7 +1028,6 @@ export default function ATDMS() {
                       </div>
                     </Card>
                   </motion.div>
-
                   <motion.div
                     whileHover={{ scale: 1.02 }}
                     className="relative group cursor-pointer"
@@ -1187,7 +1138,6 @@ export default function ATDMS() {
                   help resolve any unexpected errors quickly
                 </p>
               </motion.div>
-
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
@@ -1235,7 +1185,6 @@ export default function ATDMS() {
                       </div>
                     </div>
                   </div>
-
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-6">
                       Support Hours
@@ -1263,7 +1212,6 @@ export default function ATDMS() {
                       </div>
                     </div>
                   </div>
-
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-6">
                       Common Error Solutions
@@ -1307,7 +1255,6 @@ export default function ATDMS() {
                     </div>
                   </div>
                 </motion.div>
-
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   whileInView={{ opacity: 1, x: 0 }}
