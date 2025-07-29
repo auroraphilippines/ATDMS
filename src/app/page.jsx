@@ -168,7 +168,7 @@ function StartupScreen() {
               <div className="relative w-48 h-48 bg-white rounded-full flex items-center justify-center shadow-2xl border-4 border-slate-300">
                 <Image
                   src="/images/lap.png"
-                  alt="ATDMS Logo"
+                  alt="AAS Logo"
                   width={120}
                   height={120}
                   className="drop-shadow-lg"
@@ -231,7 +231,7 @@ function StartupScreen() {
   );
 }
 
-export default function ATDMS() {
+export default function AAS() {
   const [mounted, setMounted] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
@@ -305,7 +305,7 @@ export default function ATDMS() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-green-50">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading ATDMS...</p>
+          <p className="text-gray-600">Loading AAS...</p>
         </div>
       </div>
     );
@@ -422,8 +422,8 @@ export default function ATDMS() {
         <motion.header
           className={`fixed w-full z-50 transition-all duration-300 ${
             isScrolled
-              ? "bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-lg"
-              : "bg-white/90 backdrop-blur-sm"
+              ? "bg-transparent backdrop-blur-xl border-b border-gray-200 shadow-lg"
+              : "bg-transparent backdrop-blur-sm"
           }`}
           initial={{ y: -100 }}
           animate={{ y: 0 }}
@@ -442,7 +442,7 @@ export default function ATDMS() {
                   <div className="relative">
                     <Image
                       src="/images/lap.png"
-                      alt="ATDMS Logo"
+                      alt="AAS Logo"
                       width={45}
                       height={45}
                       className="hover:scale-105 transition-transform duration-300 drop-shadow-lg"
@@ -450,11 +450,9 @@ export default function ATDMS() {
                     <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
                   </div>
                   <div>
-                    <span className="text-xl font-bold text-gray-800">
-                      ATDMS
-                    </span>
+                    <span className="text-xl font-bold text-gray-800">AAS</span>
                     <div className="text-xs text-gray-500 -mt-1">
-                      Tourism Management
+                      Aurora Accommodation System
                     </div>
                   </div>
                 </Link>
@@ -462,7 +460,7 @@ export default function ATDMS() {
 
               {/* Center Navigation - Now truly centered */}
               <motion.nav
-                className="flex items-center space-x-1 bg-white/80 backdrop-blur-sm rounded-full px-6 py-2 shadow-lg border border-gray-200"
+                className="flex items-center space-x-1 bg-transparent backdrop-blur-sm rounded-full px-6 py-2 shadow-lg border border-gray-200"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
@@ -640,7 +638,7 @@ export default function ATDMS() {
                         className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium"
                       >
                         <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
-                        Tourism Management System
+                        Aurora Accommodation System
                       </motion.div>
                       <motion.h1
                         className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight"
@@ -651,7 +649,7 @@ export default function ATDMS() {
                         Welcome To
                         <br />
                         <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                          ATDMS
+                          AAS
                         </span>
                       </motion.h1>
                       <motion.p
@@ -846,7 +844,7 @@ export default function ATDMS() {
                 </h2>
                 <p className="text-xl text-gray-600 max-w-2xl mx-auto">
                   Explore the beautiful accommodations and tourism destinations
-                  managed through our ATDMS platform
+                  managed through our AAS platform
                 </p>
               </motion.div>
 
@@ -1113,6 +1111,46 @@ export default function ATDMS() {
                     </div>
                   </CardContent>
                 </Card>
+              </motion.div>
+              {/* View All Button */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                viewport={{ once: true }}
+                className="text-center mt-12"
+              >
+                <Link href="/gallery">
+                  <Button className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-8 py-4 rounded-full text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    View All Establishments
+                    <svg
+                      className="w-5 h-5 ml-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 7l5 5m0 0l-5 5m5-5H6"
+                      />
+                    </svg>
+                  </Button>
+                </Link>
               </motion.div>
             </div>
           </section>
@@ -1415,12 +1453,12 @@ export default function ATDMS() {
                 viewport={{ once: true }}
               >
                 <h3 className="text-lg font-semibold mb-4 text-white">
-                  About Central Aurora Tourism Management System
+                  About Aurora Accommodation System
                 </h3>
                 <p className="text-sm text-gray-300 mb-6">
-                  ATDMS is the leading accommodation inspection management
-                  system, streamlining quality control processes for hotels,
-                  resorts, and vacation rentals worldwide.
+                  AAS is the leading accommodation inspection management system,
+                  streamlining quality control processes for hotels, resorts,
+                  and vacation rentals worldwide.
                 </p>
                 <div className="flex space-x-4">
                   <Image
@@ -1529,7 +1567,7 @@ export default function ATDMS() {
             </div>
             <div className="mt-8 pt-8 border-t border-gray-700 text-center">
               <p className="text-sm text-gray-400">
-                &copy; {new Date().getFullYear()} ATDMS All rights reserved.
+                &copy; {new Date().getFullYear()} AAS All rights reserved.
                 Develop by クリスチャン ジョセフ マリグメン.
               </p>
             </div>
